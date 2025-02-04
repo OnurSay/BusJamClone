@@ -1,9 +1,8 @@
 #if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using BusJamClone.Scripts.Data;
-using BusJamClone.Scripts.Runtime.Managers;
 using BusJamClone.Scripts.Runtime.Models;
+using BusJamClone.Scripts.Utilities;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,66 +10,65 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
 {
     public class LevelCreator : MonoBehaviour
     {
-        [HideInInspector] public int gridWidth;
-        [HideInInspector] public int gridHeight;
-        [HideInInspector] public int levelIndex;
-        [SerializeField] private GameObject gridBasePrefab;
+        [Header("Cached References")] [SerializeField]
+        private GameObject gridBasePrefab;
+
         [SerializeField] private GameObject stickmanPrefab;
         [SerializeField] private GameObject busPrefab;
-        [SerializeField] private GameplayManager gameplayManager;
         public GameColors gameColors;
-        [SerializeField] private float spaceModifier;
+        [SerializeField] private AddressablePrefabSaver prefabSaver;
 
-        [Header("Level Settings")] [SerializeField]
-        private List<LevelGoal> levelGoals;
+        [Header("Level Settings")] [HideInInspector]
+        public int gridWidth;
 
+        [HideInInspector] public int gridHeight;
+        [HideInInspector] public int levelIndex;
+        [SerializeField] private List<LevelGoal> levelGoals;
         [SerializeField] private int levelTime;
-
         [SerializeField] private LevelData.GridColorType colorTypes;
 
+        [Header("Constant Variables")] [SerializeField]
+        private float spaceModifier;
 
-        private LevelData _levelData;
+        private LevelData levelData;
 
         public void GenerateLevel()
         {
-            if (_levelData != null)
+            if (levelData != null)
                 return;
-            //Debug.Log(_levelData.GetGridCount() + " 1");
-            _levelData = LevelSaveSystem.LoadLevel(levelIndex);
-            if (_levelData == null)
-            {
-                _levelData = new LevelData(gridWidth, gridHeight);
-                SaveLevel();
-            }
+
+            levelData = LevelSaveSystem.LoadLevel(levelIndex);
+            if (levelData != null) return;
+            levelData = new LevelData(gridWidth, gridHeight);
+            SaveLevel();
         }
 
         public void GridButtonAction(int x, int y)
         {
-            _levelData.SetCellColor(x, y, colorTypes);
+            levelData.SetCellColor(x, y, colorTypes);
         }
 
         public void GridRemoveButtonAction(int x, int y)
         {
-            _levelData.RemoveCellColor(x, y);
+            levelData.RemoveCellColor(x, y);
         }
 
-        public void SaveLevel() => LevelSaveSystem.SaveLevel(_levelData, levelIndex);
+        public void SaveLevel() => LevelSaveSystem.SaveLevel(levelData, levelIndex);
 
-        public void LoadLevel() => _levelData = LevelSaveSystem.LoadLevel(levelIndex);
+        public void LoadLevel() => levelData = LevelSaveSystem.LoadLevel(levelIndex);
 
         public void ResetLevel()
         {
-            _levelData = new LevelData(gridWidth, gridHeight);
-            //SaveLevel();
+            levelData = new LevelData(gridWidth, gridHeight);
         }
 
-        public LevelData GetLevelData() => _levelData;
+        public LevelData GetLevelData() => levelData;
 
         public void SpawnGrid()
         {
             SaveLevel();
 
-            var gridBases = new GridBase[gridWidth,gridHeight];
+            var gridBases = new GridBase[gridWidth, gridHeight];
             var oldParentObject = GameObject.FindGameObjectWithTag("LevelParent");
             if (oldParentObject)
             {
@@ -78,6 +76,7 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
             }
 
             var newParentObject = new GameObject("Level_" + levelIndex);
+            var levelContainer = newParentObject.AddComponent<LevelContainer>();
             newParentObject.transform.tag = "LevelParent";
 
 
@@ -85,69 +84,75 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
             gridParentObject.transform.SetParent(newParentObject.transform);
 
 
-            for (var y = 0; y < _levelData.height; y++)
+            for (var y = 0; y < levelData.height; y++)
             {
-                for (var x = 0; x < _levelData.width; x++)
+                for (var x = 0; x < levelData.width; x++)
                 {
-                    var cell = _levelData.GetGridCell(x, y);
+                    var cell = levelData.GetGridCell(x, y);
 
                     var pos = transform.position + GridSpaceToWorldSpace(x, y);
 
                     var gridBaseObj = PrefabUtility.InstantiatePrefab(gridBasePrefab.gameObject) as GameObject;
+                    if (!gridBaseObj) continue;
                     gridBaseObj.transform.SetParent(gridParentObject.transform);
                     gridBaseObj.transform.position = pos;
+                    gridBaseObj.transform.localEulerAngles = new Vector3(gridBaseObj.transform.localEulerAngles.x, 180f,
+                        gridBaseObj.transform.localEulerAngles.z);
 
                     var gridBaseScript = gridBaseObj.GetComponent<GridBase>();
                     gridBases[x, y] = gridBaseScript;
                     if (cell.stackData.stickmanColorType is LevelData.GridColorType.None
                         or LevelData.GridColorType.Close)
                     {
-                        gridBaseScript.Init(null, x, y);
+                        gridBaseScript.Init(null, cell.stackData.stickmanColorType is LevelData.GridColorType.Close,
+                            x,
+                            y);
                         continue;
                     }
 
                     var stickman = PrefabUtility.InstantiatePrefab(stickmanPrefab.gameObject) as GameObject;
+                    if (!stickman) continue;
                     stickman.transform.SetParent(gridBaseObj.transform);
                     stickman.transform.localPosition = Vector3.zero;
                     var stickmanScript = stickman.GetComponent<Stickman>();
-                    stickmanScript.Init(cell.stackData.stickmanColorType, cell);
+                    stickmanScript.Init(cell.stackData.stickmanColorType, gridBaseScript);
 
                     gridBaseScript = gridBaseObj.GetComponent<GridBase>();
-                    gridBaseScript.Init(stickmanScript, cell.X, cell.Y);
+                    gridBaseScript.Init(stickmanScript, false, cell.X, cell.Y);
                 }
             }
 
-            SpawnLevelGoals(newParentObject.transform);
+            var levelBuses = SpawnLevelGoals(newParentObject.transform);
 
 
             // var scoreManager = FindObjectOfType<ScoreManager>();
             // EditorUtility.SetDirty(scoreManager);
-            var gridManager = FindObjectOfType<GridManager>();
-            gridManager.Init(gridWidth, gridHeight, gridBases);
-            EditorUtility.SetDirty(gridManager);
+            levelContainer.Init(gridWidth, gridHeight, levelTime, gridBases, levelBuses);
+            EditorUtility.SetDirty(levelContainer);
+            prefabSaver.SaveAndAssignPrefab(newParentObject, levelIndex);
+            EditorUtility.SetDirty(prefabSaver);
         }
 
-        private void SpawnLevelGoals(Transform levelParent)
+        private List<BusScript> SpawnLevelGoals(Transform levelParent)
         {
+            var buses = new List<BusScript>();
             var busParent = new GameObject("BusParent");
             busParent.transform.SetParent(levelParent);
             busParent.transform.position = new Vector3(0, 0.60848f, -9.21f);
             var x = 5.75f;
-            for (var i = 0; i < levelGoals.Count; i++)
+            foreach (var levelGoal in levelGoals)
             {
                 var bus = PrefabUtility.InstantiatePrefab(busPrefab) as GameObject;
+                if (!bus) continue;
                 bus.transform.SetParent(busParent.transform);
                 bus.transform.localPosition = new Vector3(x, 0, 0);
                 x += 5.75f;
                 var busScript = bus.GetComponent<BusScript>();
-                busScript.Init(levelGoals[i].colorType);
-                gameplayManager.AddBus(busScript);
+                busScript.Init(levelGoal.colorType);
+                buses.Add(busScript);
             }
-        }
 
-        private Vector3 CalculateUpperCenter(int width, int height)
-        {
-            return new Vector3((width * spaceModifier - spaceModifier) / 2, 0, spaceModifier * height - spaceModifier);
+            return buses;
         }
 
         private Vector3 GridSpaceToWorldSpace(int x, int y)

@@ -1,5 +1,6 @@
-using System;
 using System.Collections.Generic;
+using BusJamClone.Scripts.Data;
+using BusJamClone.Scripts.Runtime.Mechanic;
 using BusJamClone.Scripts.Runtime.Models;
 using UnityEngine;
 
@@ -9,11 +10,19 @@ namespace BusJamClone.Scripts.Runtime.Managers
     {
         public static GridManager instance;
         public int width, height;
-        [SerializeField] public GridBase[,] gridBaseArray;
+        [SerializeField] private GridBase[,] gridBaseArray;
+        public AStarPathfinding pathfinder;
+        [SerializeField] private LevelContainer currentLevel;
 
         private void Awake()
         {
             MakeSingleton();
+        }
+
+
+        private void InitializePathfinder()
+        {
+            pathfinder = new AStarPathfinding(gridBaseArray);
         }
 
         private void MakeSingleton()
@@ -26,19 +35,26 @@ namespace BusJamClone.Scripts.Runtime.Managers
                 Destroy(this);
         }
 
-        public void Init(int w, int h, GridBase[,] gridBases)
+        public void Init(int w, int h, GridBase[,] gridBases, LevelContainer level)
         {
             width = w;
             height = h;
-
+            
             gridBaseArray = gridBases;
+            currentLevel = level;
+            InitializePathfinder();
         }
+
+        public void RecalculatePaths()
+        {
+            currentLevel.HandleGridBasesPathfinding(gridBaseArray);
+        }
+        
 
         public GridBase[,] GetGrid()
         {
             return gridBaseArray;
         }
-        
     }
 
     [System.Serializable]

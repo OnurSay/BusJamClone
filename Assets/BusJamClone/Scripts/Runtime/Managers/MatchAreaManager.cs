@@ -45,15 +45,6 @@ namespace BusJamClone.Scripts.Runtime.Managers
             return matchAreas.Find(x => !x.HasStickman() && !x.IsReserved() ? x : null);
         }
 
-        public MatchArea GetClosestEmptyArea(Transform referenceTransform)
-        {
-            return matchAreas
-                .OrderBy(area =>
-                    Vector3.Distance(referenceTransform.position,
-                        area.transform.position)) // Order by distance to the referenceTransform
-                .FirstOrDefault();
-        }
-
         public void CheckForLastJump()
         {
             // if (claimedMatchAreas.Count == 3 && GameplayManager.instance.levelGoals.Count == 1)

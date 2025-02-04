@@ -23,6 +23,7 @@ namespace BusJamClone.Scripts.Runtime.Models
         [SerializeField] private Animator carDoorAnimator;
         [SerializeField] private bool isMoving;
         [SerializeField] private bool canComplete;
+        [SerializeField] private Transform busEntranceTransform;
 
         public GameColors gameColors;
         private static readonly int startMovement = Animator.StringToHash("startMovement");
@@ -35,7 +36,7 @@ namespace BusJamClone.Scripts.Runtime.Models
 
         private void HandleColorSet()
         {
-            var sharedMat = new Material(gameColors.ActiveMaterials[(int)busColor]);
+            var sharedMat = gameColors.ActiveMaterials[(int)busColor];
             foreach (var busRenderer in busRenderers)
             {
                 var materialArray = busRenderer.sharedMaterials;
@@ -47,7 +48,7 @@ namespace BusJamClone.Scripts.Runtime.Models
         private void CheckForComplete()
         {
             if (seatedStickmanCount != 3 || GameplayManager.instance.GetIsChangingGoal()) return;
-            GameplayManager.instance.SetIsChangingGoal(true) ;
+            GameplayManager.instance.SetIsChangingGoal(true);
             CompleteAnimation();
         }
 
@@ -57,7 +58,10 @@ namespace BusJamClone.Scripts.Runtime.Models
             busParentObject.transform.DOScale(localScale * 1.1f, 0.15f).OnComplete(() =>
             {
                 completeConfetti.Play();
-                busParentObject.transform.DOScale(localScale, 0.15f);
+                busParentObject.transform.DOScale(localScale, 0.15f).OnComplete(() =>
+                {
+                    DOVirtual.DelayedCall(0.25f, GameplayManager.instance.MoveToNextGoal);
+                });
             });
         }
 
@@ -68,6 +72,7 @@ namespace BusJamClone.Scripts.Runtime.Models
             HandleCarDoorAnimation();
             HandleSeat();
             AddStickman(1);
+            IncreaseSeatIndex();
         }
 
         private void HandleCarDoorAnimation()
@@ -112,6 +117,12 @@ namespace BusJamClone.Scripts.Runtime.Models
             seatedStickmanCount += addValue;
         }
 
+
+        private void IncreaseSeatIndex()
+        {
+            emptySeatIndex++;
+        }
+
         public LevelData.GridColorType GetColor()
         {
             return busColor;
@@ -125,6 +136,11 @@ namespace BusJamClone.Scripts.Runtime.Models
         public void SetCanComplete(bool flag)
         {
             canComplete = flag;
+        }
+
+        public Transform GetEntranceTransform()
+        {
+            return busEntranceTransform;
         }
     }
 

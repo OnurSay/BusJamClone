@@ -11,8 +11,7 @@ namespace BusJamClone.Scripts.Data
         public int X;
         public int Y;
         public StickmanData stackData;
-
-        // Add your serializable data here
+        
     }
 
     [Serializable]

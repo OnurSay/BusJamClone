@@ -48,8 +48,20 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -2129487182565092842, guid: 100ae74c3dfba3744a575952e78714be, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 100ae74c3dfba3744a575952e78714be, type: 3}
       propertyPath: m_Name
+      value: Stickman
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 100ae74c3dfba3744a575952e78714be, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 100ae74c3dfba3744a575952e78714be, type: 3}
+      propertyPath: m_TagString
       value: Stickman
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -65,6 +77,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 100ae74c3dfba3744a575952e78714be, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8894816039620123841}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 100ae74c3dfba3744a575952e78714be, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2627853537212587090}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 100ae74c3dfba3744a575952e78714be, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9090172717059044415}
     - targetCorrespondingSourceObject: {fileID: -2129487182565092842, guid: 100ae74c3dfba3744a575952e78714be, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6901908530300658749}
@@ -118,7 +136,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: eb318e7b6c217cd4a809b078473b8421, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_WarningMessage: 
@@ -165,20 +183,48 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce06762dfb6729648a1fe370cc9750a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  anim: {fileID: 3484160470059035941}
   skinnedMeshRenderer: {fileID: 5653628631812368376}
   gameColors: {fileID: 11400000, guid: b45f196236397b644a94dfc47598c364, type: 2}
   startMat: {fileID: 2100000, guid: f8f1227c4ced6fe478a46624e1a7e6cb, type: 2}
-  belongedGrid:
-    X: 0
-    Y: 0
-    stackData:
-      colorTypes: 
+  belongedGrid: {fileID: 0}
   stickmanColorType: 0
-  turnSpeed: 0
-  moveSpeed: 0
   rb: {fileID: 7346221960998742010}
   triggerCollider: {fileID: 6901908530300658749}
-  isMovingToBus: 0
-  isMovingToMatchArea: 0
   isMoving: 0
+  hasPath: 0
+  stickmanOutline: {fileID: 9090172717059044415}
+  stickmanMovement: {fileID: 2627853537212587090}
+--- !u!114 &2627853537212587090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7344943946997113421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdb6a46a48c2caa4eb83efad6e0fe243, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  runSpeed: 5
+  rotationSpeed: 10
+  stoppingDistance: 0.1
+  anim: {fileID: 3484160470059035941}
+--- !u!114 &9090172717059044415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7344943946997113421}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []

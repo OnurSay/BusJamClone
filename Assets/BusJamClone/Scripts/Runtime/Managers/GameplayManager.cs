@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using BusJamClone.Scripts.Runtime.Models;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Serialization;
 using LevelGoal = BusJamClone.Scripts.Runtime.LevelCreation.LevelGoal;
@@ -10,7 +12,6 @@ namespace BusJamClone.Scripts.Runtime.Managers
     [DefaultExecutionOrder(-1)]
     public class GameplayManager : MonoBehaviour
     {
-        [SerializeField] public List<LevelGoal> levelGoals;
         public static GameplayManager instance;
         [SerializeField] private Material secretMaterial;
         [SerializeField] private bool isChangingGoal;
@@ -18,6 +19,8 @@ namespace BusJamClone.Scripts.Runtime.Managers
         [SerializeField] private BusScript currentGoalBus;
         [SerializeField] private List<BusScript> allBuses;
         [SerializeField] private List<BusScript> completedBuses;
+
+        public Action onBusChangeDone;
 
         private void Awake()
         {
@@ -34,69 +37,24 @@ namespace BusJamClone.Scripts.Runtime.Managers
         {
             return currentGoalBus;
         }
-        
-        public LevelGoal GetCurrentGoal()
-        {
-            return levelGoals.Count > 0 ? levelGoals[0] : null;
-        }
 
-        public void AddGoal(LevelGoal goal)
+        private void AssignFirstGoal()
         {
-            levelGoals.Add(goal);
-        }
-
-        public void ClearGoals()
-        {
-            levelGoals.Clear();
-        }
-        
-        
-        
-        // public void MoveToNextGoal()
-        // {
-        //     levelGoals.RemoveAt(0);
-        //     if (levelGoals.Count <= 0)
-        //     {
-        //         isChangingGoal = false;
-        //         LevelManager.Instance.isGameFinished = true;
-        //         LevelManager.Instance.isLevelCompleted = true;
-        //         LevelManager.Instance.isGamePlayable = false;
-        //         StartCoroutine(UIManager.Instance.OpenWinScreen());
-        //         return;
-        //     }
-        //     var currentGoal = levelGoals[0];
-        //
-        //     hole.ChangeColor(currentGoal.colorType);
-        //     hole.SetNextGoalColor(levelGoals.Count == 1 ? null : levelGoals[1]);
-        //     MatchAreaManager.instance.CheckForLastJump();
-        //     StartCoroutine(HandleNewGoal());
-        //     isChangingGoal = false;
-        // }
-
-        public IEnumerator HandleNewGoal()
-        {
-            isGridCheckOnProgress = true;
-            yield return new WaitForSeconds(0.25f);
-            var matchAreas = MatchAreaManager.instance.GetMatchAreas();
-            for (var i = 0; i < matchAreas.Count; i++)
-            {
-                matchAreas[i].HandleNewGoal();
-            }
-
-            yield return new WaitForSeconds(0.8f);
-            isGridCheckOnProgress = false;
-            
-        }
-        
-        public void AssignFirstGoal()
-        {
-            currentGoalBus.Init(levelGoals[0].colorType);
+            currentGoalBus = allBuses[0];
         }
 
         public void MoveToNextGoal()
         {
-            levelGoals.RemoveAt(0);
-            if (levelGoals.Count <= 0)
+            var completedBus = currentGoalBus;
+            allBuses.Remove(currentGoalBus);
+            completedBuses.Add(completedBus);
+            completedBus.transform.DOLocalMoveX(completedBus.transform.localPosition.x - 20f, 2f)
+                .OnComplete(() =>
+                {
+                    Destroy(completedBus);
+                });
+            
+            if (allBuses.Count <= 0)
             {
                 isChangingGoal = false;
                 LevelManager.Instance.isGameFinished = true;
@@ -105,11 +63,28 @@ namespace BusJamClone.Scripts.Runtime.Managers
                 // StartCoroutine(UIManager.Instance.OpenWinScreen());
                 return;
             }
-            var currentGoal = levelGoals[0];
-            //Handle new bus movement;
-            MatchAreaManager.instance.CheckForLastJump();
-            StartCoroutine(HandleNewGoal());
+
+            currentGoalBus = allBuses[0];
+            HandleLevelBusMovements();
             isChangingGoal = false;
+        }
+
+        private void HandleLevelBusMovements()
+        {
+            StartCoroutine(BusMovements());
+        }
+
+        private IEnumerator BusMovements()
+        {
+            foreach (var bus in allBuses)
+            {
+                bus.transform.DOLocalMoveX(bus.transform.localPosition.x - 5.75f, 1f).SetEase(Ease.InSine).OnComplete(
+                    () =>
+                    {
+                        onBusChangeDone?.Invoke();
+                    });
+                yield return new WaitForSeconds(0.5f);
+            }
         }
 
         public bool GetIsGridCheckOnProgress()
@@ -135,6 +110,18 @@ namespace BusJamClone.Scripts.Runtime.Managers
         public void AddBus(BusScript busScript)
         {
             allBuses.Add(busScript);
+        }
+
+        public void ResetLevelGoals()
+        {
+            allBuses.Clear();
+        }
+
+        public void SetBuses(List<BusScript> levelBuses)
+        {
+            allBuses = levelBuses;
+            HandleLevelBusMovements();
+            AssignFirstGoal();
         }
     }
 }

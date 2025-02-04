@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 1521854045760298058}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.47}
+  m_LocalPosition: {x: -0.000000012525971, y: 0, z: -0.47}
   m_LocalScale: {x: 1, y: 0.074347, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -124,15 +124,14 @@ MonoBehaviour:
   wallObject: {fileID: 1944599142416220594}
   x: 0
   y: 0
-  radius: 0
-  direction: {x: 0, y: 0, z: 0}
-  distance: 0
-  neighbourGridBases: []
-  gridAreaLayer:
-    serializedVersion: 2
-    m_Bits: 0
   isSecret: 0
   isClosed: 0
+  visited: 0
+  gCost: 0
+  hCost: 0
+  parent: {fileID: 0}
+  hasPath: 0
+  closestPath: []
 --- !u!1 &1944599142416220594
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &526160122180358512
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8800460648870119172}
+  m_Layer: 0
+  m_Name: BusEntranceTransform
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8800460648870119172
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 526160122180358512}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 1.115}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1368722389312878681}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &568664088548401733
 GameObject:
   m_ObjectHideFlags: 0
@@ -1413,6 +1444,7 @@ Transform:
   - {fileID: 565757116078095366}
   - {fileID: 7953756921877756560}
   - {fileID: 4751325056247563370}
+  - {fileID: 8800460648870119172}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7264636179670932664
@@ -1467,6 +1499,7 @@ MonoBehaviour:
   carDoorAnimator: {fileID: 8958532517227836754}
   isMoving: 0
   canComplete: 0
+  busEntranceTransform: {fileID: 8800460648870119172}
   gameColors: {fileID: 11400000, guid: b45f196236397b644a94dfc47598c364, type: 2}
 --- !u!1 &6948677770107609209
 GameObject:
