@@ -1,5 +1,5 @@
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using BusJamClone.Scripts.Runtime.Models;
 using UnityEngine;
 
@@ -9,9 +9,18 @@ namespace BusJamClone.Scripts.Runtime.Managers
     {
         [SerializeField] private List<MatchArea> matchAreas;
         [SerializeField] private List<MatchArea> claimedMatchAreas;
-        public bool isSlideProcessing;
 
         public static MatchAreaManager instance;
+
+        private void OnEnable()
+        {
+            GameplayManager.instance.onBusChangeDone += HandleNewGoal;
+        }
+
+        private void OnDisable()
+        {
+            GameplayManager.instance.onBusChangeDone -= HandleNewGoal;
+        }
 
         private void Awake()
         {
@@ -24,20 +33,20 @@ namespace BusJamClone.Scripts.Runtime.Managers
             instance = this;
         }
 
+        private void HandleNewGoal()
+        {
+            foreach (var matchArea in matchAreas)
+            {
+                matchArea.HandleNewGoal();
+            }
+
+            CheckMatchAreas();
+        }
+
         public void AddMatchArea(MatchArea matchArea)
         {
             if (matchAreas.Contains(matchArea)) return;
             matchAreas.Add(matchArea);
-        }
-
-        public List<MatchArea> GetMatchAreas()
-        {
-            return matchAreas;
-        }
-
-        public List<MatchArea> GetClaimedMatchAreas()
-        {
-            return claimedMatchAreas;
         }
 
         public MatchArea GetEmptyArea()
@@ -45,36 +54,32 @@ namespace BusJamClone.Scripts.Runtime.Managers
             return matchAreas.Find(x => !x.HasStickman() && !x.IsReserved() ? x : null);
         }
 
-        public void CheckForLastJump()
+        private void CheckMatchAreas()
         {
-            // if (claimedMatchAreas.Count == 3 && GameplayManager.instance.levelGoals.Count == 1)
-            // {
-            //     var colorType = claimedMatchAreas.Find(x => x.HasStickman()).GetCurrentStickmanGroup()
-            //         .stickmanColorType;
-            //     if (GameplayManager.instance.isChangingGoal)
-            //     {
-            //         GameplayManager.instance.isChangingGoal = false;
-            //     }
-            //
-            //     if (GameplayManager.instance.GetCurrentGoal() == null)
-            //     {
-            //         GameplayManager.instance.AddGoal(new LevelGoal()
-            //         {
-            //             colorType = colorType
-            //         });
-            //         GameplayManager.instance.goalBus.ChangeColor(colorType);
-            //     }
-            //     else
-            //     {
-            //         GameplayManager.instance.GetCurrentGoal().colorType = colorType;
-            //         GameplayManager.instance.goalBus.ChangeColor(colorType);
-            //     }
-            //
-            //     foreach (var matchArea in claimedMatchAreas)
-            //     {
-            //         matchArea.HandleNewGoal();
-            //     }
-            // }
+            if (GameplayManager.instance.GetIsChangingGoal() ||
+                GameplayManager.instance.GetStickmanThroughBus().Count > 0) return;
+
+            if (claimedMatchAreas.Count != matchAreas.Count || claimedMatchAreas.Count == 0 ||
+                matchAreas.Count == 0) return;
+            GameplayManager.instance.LoseGame();
+        }
+
+        public void AssignMatchArea(MatchArea claimedArea)
+        {
+            if (!claimedMatchAreas.Contains(claimedArea))
+            {
+                claimedMatchAreas.Add(claimedArea);
+            }
+
+            CheckMatchAreas();
+        }
+
+        public void RemoveMatchArea(MatchArea matchArea)
+        {
+            if (claimedMatchAreas.Contains(matchArea))
+            {
+                claimedMatchAreas.Remove(matchArea);
+            }
         }
     }
 }

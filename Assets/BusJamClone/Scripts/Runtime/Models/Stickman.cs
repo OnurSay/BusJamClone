@@ -21,6 +21,8 @@ namespace BusJamClone.Scripts.Runtime.Models
         [SerializeField] private bool hasPath;
         [SerializeField] private Outline stickmanOutline;
         [SerializeField] private StickmanMovement stickmanMovement;
+        [SerializeField] private GameObject reservedCap;
+        [SerializeField] private bool isReserved;
 
         public void Init(LevelData.GridColorType colorType, GridBase gridCell)
         {
@@ -56,13 +58,11 @@ namespace BusJamClone.Scripts.Runtime.Models
 
             var currentBus = GameplayManager.instance.GetCurrentBus();
 
-
+            GameplayManager.instance.AddStickmanThroughBus(this);
             if (path != null)
             {
                 var pathPositions = HandlePathPositions(path, currentBus.GetEntranceTransform().position);
                 stickmanMovement.Run(pathPositions, JumpToBus);
-                transform.DOPath(pathPositions, 1.5f, PathType.CatmullRom).SetEase(Ease.Linear).SetLookAt(0.01f)
-                    .OnComplete(JumpToBus);
             }
             else
             {
@@ -89,6 +89,7 @@ namespace BusJamClone.Scripts.Runtime.Models
         {
             transform.SetParent(null);
             gameObject.SetActive(false);
+            GameplayManager.instance.RemoveStickmanThroughBus(this);
             GameplayManager.instance.GetCurrentBus().GetStickman();
         }
 
@@ -118,11 +119,11 @@ namespace BusJamClone.Scripts.Runtime.Models
         {
             belongedGrid = matchArea;
             matchArea.AddStickman(this);
-            matchArea.SetReserved(false);
         }
 
         private void PlaceToMatchArea()
         {
+            MatchAreaManager.instance.AssignMatchArea(belongedGrid as MatchArea);
             stickmanMovement.Stop();
             transform.SetParent(belongedGrid.transform);
             transform.localPosition = Vector3.zero;

@@ -18,16 +18,21 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
         void Update()
         {
-            // if (!ShouldProcessInput())
-            // {
-            //     return;
-            // }
+            if (!ShouldProcessInput())
+            {
+                return;
+            }
 
 
             if (Input.GetMouseButtonDown(0))
             {
                 ProcessRaycastInteraction();
             }
+        }
+
+        private bool ShouldProcessInput()
+        {
+            return LevelManager.instance.isGamePlayable && !LevelManager.instance.isLevelFailed;
         }
 
         void ProcessRaycastInteraction()
@@ -47,16 +52,11 @@ namespace BusJamClone.Scripts.Runtime.Managers
         private void TrySelectStickman(RaycastHit hitInfo)
         {
             if (!hitInfo.transform.TryGetComponent(out Stickman stickman)) return;
-            // if (gameplayManager.isPlayingTutorial)
-            // {
-            //     TutorialManager.Instance.StepForward();
-            // }
 
-            // if (VibrationManager.Instance)
-            // {
-            //     VibrationManager.Instance.Light();
-            //     AudioManager.Instance.PlayOneShot(selectionClip);
-            // }
+            if (VibrationManager.instance)
+            {
+                VibrationManager.instance.Light();
+            }
 
             if (!stickman.GetHasPath() && stickman.belongedGrid.y != 0) return;
             if (stickman.isMoving) return;
@@ -68,7 +68,6 @@ namespace BusJamClone.Scripts.Runtime.Managers
             {
                 currentGoal.AddComingStickman(1);
                 stickman.DisableInteraction();
-                // currentGoal.SetCanComplete(false);
                 stickman.GoToBus(path);
                 GridManager.instance.RecalculatePaths();
             }
@@ -77,11 +76,9 @@ namespace BusJamClone.Scripts.Runtime.Managers
                 var availableMatchArea = MatchAreaManager.instance.GetEmptyArea();
                 if (!availableMatchArea) return;
                 stickman.DisableInteraction();
-                stickman.GoToMatchArea(availableMatchArea, availableMatchArea.transform,path);
+                stickman.GoToMatchArea(availableMatchArea, availableMatchArea.transform, path);
                 GridManager.instance.RecalculatePaths();
             }
-
-            
         }
     }
 }

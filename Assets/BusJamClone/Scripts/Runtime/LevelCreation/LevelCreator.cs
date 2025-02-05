@@ -96,8 +96,6 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
                     if (!gridBaseObj) continue;
                     gridBaseObj.transform.SetParent(gridParentObject.transform);
                     gridBaseObj.transform.position = pos;
-                    gridBaseObj.transform.localEulerAngles = new Vector3(gridBaseObj.transform.localEulerAngles.x, 180f,
-                        gridBaseObj.transform.localEulerAngles.z);
 
                     var gridBaseScript = gridBaseObj.GetComponent<GridBase>();
                     gridBases[x, y] = gridBaseScript;

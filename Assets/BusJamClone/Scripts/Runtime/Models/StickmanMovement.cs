@@ -1,5 +1,6 @@
 using System;
 using BusJamClone.Scripts.Runtime.Interfaces;
+using BusJamClone.Scripts.Runtime.Managers;
 using UnityEngine;
 
 namespace BusJamClone.Scripts.Runtime.Models
@@ -11,23 +12,48 @@ namespace BusJamClone.Scripts.Runtime.Models
         public float rotationSpeed = 10f;
         public float stoppingDistance = 0.1f;
         private int currentWaypointIndex;
-        private bool isMoving = true;
+        private bool isMoving;
+        private bool isPathSet;
         public Animator anim;
         private static readonly int isRunning = Animator.StringToHash("isRunning");
         private Action onCompleteCallback;
 
+        private void OnEnable()
+        {
+            GameplayManager.instance.onGameLost += StopMovement;
+        }
+
+        private void OnDisable()
+        {
+            GameplayManager.instance.onGameLost -= StopMovement;
+        }
+
         private void Update()
         {
-            if (!isMoving || path == null || currentWaypointIndex >= path.Length)
+            if (!isPathSet) return;
+            HandleMovement();
+        }
+
+        private void HandleMovement()
+        {
+            if (isMoving && path != null && currentWaypointIndex < path.Length)
             {
-                if (!isMoving || onCompleteCallback == null) return;
-                onCompleteCallback.Invoke();
-                onCompleteCallback = null;
-
-                return;
+                MoveTowardsTarget();
             }
+            else
+            {
+                if(LevelManager.instance.isLevelFailed) return;
+                FinalizeMovement();
+            }
+        }
 
-            MoveTowardsTarget();
+        private void FinalizeMovement()
+        {
+            StopMovement();
+            isPathSet = false;
+            if (onCompleteCallback == null) return;
+            onCompleteCallback.Invoke();
+            onCompleteCallback = null;
         }
 
         private void MoveTowardsTarget()
@@ -47,17 +73,15 @@ namespace BusJamClone.Scripts.Runtime.Models
 
             if (!(Vector3.Distance(transform.position, targetPosition) <= stoppingDistance)) return;
             currentWaypointIndex++;
-            if (currentWaypointIndex >= path.Length)
-            {
-                StopMovement();
-            }
-
+            if (currentWaypointIndex < path.Length) return;
+            FinalizeMovement();
         }
 
         public void SetPath(Vector3[] newPath, Action onComplete = null)
         {
             path = newPath;
             currentWaypointIndex = 0;
+            isPathSet = true;
             isMoving = true;
             onCompleteCallback = onComplete;
         }
@@ -65,16 +89,18 @@ namespace BusJamClone.Scripts.Runtime.Models
         public void ChangePath(Vector3[] newPath, Action onComplete = null)
         {
             StopMovement();
+
             path = newPath;
             currentWaypointIndex = Mathf.Clamp(currentWaypointIndex, 0, path.Length - 1);
-            onCompleteCallback = null;
             onCompleteCallback = onComplete;
-            
+
             StartMovement();
         }
 
         private void StopMovement()
         {
+            path = null;
+            isPathSet = false;
             anim.SetBool(isRunning, false);
             isMoving = false;
         }
@@ -92,6 +118,7 @@ namespace BusJamClone.Scripts.Runtime.Models
                 ChangePath(newPath, onComplete);
                 return;
             }
+
             SetPath(newPath, onComplete);
             StartMovement();
         }

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using BusJamClone.Scripts.Data;
 using BusJamClone.Scripts.Runtime.Mechanic;
 using BusJamClone.Scripts.Runtime.Models;
@@ -18,7 +17,6 @@ namespace BusJamClone.Scripts.Runtime.Managers
         {
             MakeSingleton();
         }
-
 
         private void InitializePathfinder()
         {
@@ -50,16 +48,5 @@ namespace BusJamClone.Scripts.Runtime.Managers
             currentLevel.HandleGridBasesPathfinding(gridBaseArray);
         }
         
-
-        public GridBase[,] GetGrid()
-        {
-            return gridBaseArray;
-        }
-    }
-
-    [System.Serializable]
-    public class IntList
-    {
-        public List<int> list = new List<int>();
     }
 }

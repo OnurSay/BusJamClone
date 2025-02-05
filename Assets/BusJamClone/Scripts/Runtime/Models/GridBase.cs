@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using BusJamClone.Scripts.Runtime.Managers;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -30,7 +31,9 @@ namespace BusJamClone.Scripts.Runtime.Models
         public void HandlePath()
         { 
             if (!stickman) return;
+            UniTask.SwitchToTaskPool();
             closestPath = GridManager.instance.pathfinder.FindPath(new Vector2Int(x, y));
+            UniTask.SwitchToMainThread();
             GridManager.instance.pathfinder.ResetVisitedStates();
             if (closestPath == null)
             {
