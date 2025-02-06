@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using BusJamClone.Scripts.Runtime.Models;
 using static BusJamClone.Scripts.Data.LevelData;
 
 namespace BusJamClone.Scripts.Data
@@ -8,8 +6,8 @@ namespace BusJamClone.Scripts.Data
     [Serializable]
     public struct GridCell
     {
-        public int X;
-        public int Y;
+        public int x;
+        public int y;
         public StickmanData stackData;
         
     }
@@ -34,6 +32,8 @@ namespace BusJamClone.Scripts.Data
         public struct StickmanData
         {
             public GridColorType stickmanColorType;
+            public bool isSecret;
+            public bool isReserved;
         }
 
         public int width => gridCells.GetLength(0);
@@ -49,8 +49,8 @@ namespace BusJamClone.Scripts.Data
                 {
                     gridCells[x, y] = new GridCell
                     {
-                        X = x,
-                        Y = y
+                        x = x,
+                        y = y
                     };
                 }
             }
@@ -59,14 +59,18 @@ namespace BusJamClone.Scripts.Data
         public GridCell[,] GetGrid() => gridCells;
         public GridCell GetGridCell(int x, int y) => gridCells[x, y];
 
-        public void SetCellColor(int x, int y, GridColorType stickmanColor)
+        public void SetCellSettings(int x, int y, GridColorType stickmanColor, bool isSecretStickman, bool isReservedStickman)
         {
             gridCells[x, y].stackData.stickmanColorType = stickmanColor;
+            gridCells[x, y].stackData.isSecret = isSecretStickman;
+            gridCells[x, y].stackData.isReserved = isReservedStickman;
         }
 
-        public void RemoveCellColor(int x, int y)
+        public void RemoveCellSettings(int x, int y)
         {
             gridCells[x, y].stackData.stickmanColorType = 0;
+            gridCells[x, y].stackData.isSecret = false;
+            gridCells[x, y].stackData.isReserved = false;
         }
     }
 }

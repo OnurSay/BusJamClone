@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
 using DG.Tweening;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,14 +10,30 @@ namespace BusJamClone.Scripts.Runtime.Managers
 {
     public class UIManager : MonoBehaviour
     {
-        [Header("Cached References")] [SerializeField]
-        private Image screenTransitionImage;
-
+        public static UIManager instance;
+        
+        [Header("Cached References")] 
+        [SerializeField] private Image screenTransitionImage;
         [SerializeField] private GameObject loadingScreen;
         [SerializeField] private GameObject loseScreen;
-
         [SerializeField] private GameObject levelCompleteConfetti;
-        public static UIManager instance;
+        [SerializeField] private GameObject youWinObject;
+
+        [Header("Timer References")] 
+        [SerializeField] private GameObject timerParent;
+        [SerializeField] private TextMeshProUGUI timerTMP;
+        private bool isTimerBlinking;
+
+        [Header("Level Text References")]
+        [SerializeField] private GameObject levelTextParent;
+        [SerializeField] private TextMeshProUGUI levelTMP;
+
+        [Header("Settings References")] 
+        [SerializeField] private GameObject settingsPanel;
+        [SerializeField] private GameObject settingsButton;
+        [SerializeField] private Slider audioSlider;
+        [SerializeField] private Slider vibrationSlider;
+
 
         private void Awake()
         {
@@ -29,6 +48,9 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
         public void OpenTransition(Action callback)
         {
+            CloseTimer();
+            CloseLevelText();
+            DisableSettingsButton();
             var color = screenTransitionImage.color;
             screenTransitionImage.DOColor(new Color(color.r, color.g, color.b, 1f), 0.5f).OnComplete(() =>
             {
@@ -36,10 +58,13 @@ namespace BusJamClone.Scripts.Runtime.Managers
             });
         }
 
-        public void CloseTransition()
+        public void CloseTransition(Action callback)
         {
             var color = screenTransitionImage.color;
-            screenTransitionImage.DOColor(new Color(color.r, color.g, color.b, 0f), 0.5f);
+            screenTransitionImage.DOColor(new Color(color.r, color.g, color.b, 0f), 0.5f).OnComplete(() =>
+            {
+                callback?.Invoke();
+            });
         }
 
         public void CloseLoadingScreen()
@@ -70,6 +95,121 @@ namespace BusJamClone.Scripts.Runtime.Managers
         public void LevelCompleteEvents()
         {
             levelCompleteConfetti.SetActive(true);
+            youWinObject.SetActive(true);
+        }
+
+        public void OpenTimer()
+        {
+            timerParent.SetActive(true);
+            timerParent.transform.DOScale(Vector3.one, 0.15f).SetEase(Ease.OutBack).OnComplete(StartBlinkTimer);
+        }
+
+        private void CloseTimer()
+        {
+            timerParent.transform.DOScale(Vector3.zero, 0.15f).SetEase(Ease.InBack).OnComplete(() =>
+            {
+                isTimerBlinking = false;
+                StopCoroutine(BlinkTimer());
+                timerParent.SetActive(false);
+            });
+        }
+
+        public TextMeshProUGUI GetTimerTMP()
+        {
+            return timerTMP;
+        }
+
+        public void OpenLevelText()
+        {
+            levelTextParent.SetActive(true);
+        }
+
+        private void CloseLevelText()
+        {
+            levelTextParent.SetActive(false);
+        }
+
+        public TextMeshProUGUI GetLevelTMP()
+        {
+            return levelTMP;
+        }
+
+        public void EnableSettingsButton()
+        {
+            settingsButton.SetActive(true);
+        }
+
+        public void DisableSettingsButton()
+        {
+            settingsButton.SetActive(false);
+        }
+
+        public void OpenSettingsMenu()
+        {
+            settingsPanel.transform.parent.gameObject.SetActive(true);
+            settingsPanel.transform.DOScale(Vector3.one, 0.15f).SetEase(Ease.OutBack);
+            TimeManager.instance.PauseTimer();
+            LevelManager.instance.isGamePlayable = false;
+        }
+
+        public void CloseSettingsMenu()
+        {
+            settingsPanel.transform.DOScale(Vector3.zero, 0.15f).SetEase(Ease.InBack).OnComplete(() =>
+            {
+                settingsPanel.transform.parent.gameObject.SetActive(false);
+                TimeManager.instance.StartTimer();
+
+                LevelManager.instance.isGamePlayable = true;
+            });
+        }
+
+        public void ToggleAudio()
+        {
+            GameplayManager.instance.ToggleAudio();
+        }
+
+        public void ToggleVibration()
+        {
+            GameplayManager.instance.ToggleVibration();
+        }
+
+        public void HandleSwitches(bool isAudioOn, bool isVibrationOn)
+        {
+            audioSlider.value = isAudioOn ? 1 : 0;
+            vibrationSlider.value = isVibrationOn ? 1 : 0;
+        }
+
+        private IEnumerator BlinkTimer()
+        {
+            yield return new WaitForSeconds(1f);
+            if (TimeManager.instance.GetIsTimerActive() && TimeManager.instance.GetTimeLeft() > 10f)
+            {
+                StopBlinkTimer();
+                yield break;
+            }
+
+            timerTMP.DOColor(Color.red, 0.15f).OnComplete(() =>
+            {
+                timerTMP.DOColor(Color.white, 0.15f).SetDelay(0.15f);
+            });
+
+
+            StartCoroutine(BlinkTimer());
+        }
+
+        public void StopBlinkTimer()
+        {
+            StopCoroutine(BlinkTimer());
+            isTimerBlinking = false;
+            DOTween.Kill(timerTMP);
+            timerTMP.color = Color.white;
+        }
+
+        public void StartBlinkTimer()
+        {
+            if (isTimerBlinking) return;
+            isTimerBlinking = true;
+            StartCoroutine(BlinkTimer());
         }
     }
 }

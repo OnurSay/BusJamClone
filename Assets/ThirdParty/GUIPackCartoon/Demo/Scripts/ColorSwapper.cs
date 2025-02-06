@@ -15,11 +15,10 @@ namespace Ricimi
 
         private bool m_swapped = true;
 
-        private Image m_image;
+        public Image m_image;
 
         private void Awake()
         {
-            m_image = GetComponent<Image>();
         }
 
         public void SwapColor()

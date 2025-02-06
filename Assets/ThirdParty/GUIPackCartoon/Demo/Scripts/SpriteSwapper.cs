@@ -12,15 +12,11 @@ namespace Ricimi
     {
         public Sprite enabledSprite;
         public Sprite disabledSprite;
-
+        
         private bool m_swapped = true;
 
-        private Image m_image;
+        public Image m_image;
 
-        public void Awake()
-        {
-            m_image = GetComponent<Image>();
-        }
 
         public void SwapSprite()
         {

@@ -1,31 +1,29 @@
-using System.Collections;
 using System.Collections.Generic;
 using BusJamClone.Scripts.Data;
-using BusJamClone.Scripts.Runtime.LevelCreation;
 using BusJamClone.Scripts.Runtime.Managers;
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace BusJamClone.Scripts.Runtime.Models
 {
     public class BusScript : MonoBehaviour
     {
+        [Header("Cached References")]
         [SerializeField] private List<Renderer> busRenderers;
         [SerializeField] private List<Seat> seats;
         [SerializeField] private LevelData.GridColorType busColor;
-        [SerializeField] private int seatedStickmanCount;
-        [SerializeField] private int comingStickmanCount;
-        [SerializeField] private int emptySeatIndex;
         [SerializeField] private Material filledSeatMaterial;
         [SerializeField] private GameObject busParentObject;
         [SerializeField] private ParticleSystem completeConfetti;
         [SerializeField] private Animator carDoorAnimator;
-        [SerializeField] private bool isMoving;
-        [SerializeField] private bool canComplete;
         [SerializeField] private Transform busEntranceTransform;
+        [SerializeField] private GameColors gameColors;
+        
+        [Header("Parameters")]
+        [SerializeField] private int seatedStickmanCount;
+        [SerializeField] private int comingStickmanCount;
+        [SerializeField] private int emptySeatIndex;
 
-        public GameColors gameColors;
         private static readonly int startMovement = Animator.StringToHash("startMovement");
 
         public void Init(LevelData.GridColorType colorType)
@@ -36,20 +34,13 @@ namespace BusJamClone.Scripts.Runtime.Models
 
         private void HandleColorSet()
         {
-            var sharedMat = gameColors.ActiveMaterials[(int)busColor];
+            var sharedMat = gameColors.activeMaterials[(int)busColor];
             foreach (var busRenderer in busRenderers)
             {
                 var materialArray = busRenderer.sharedMaterials;
                 materialArray[0] = sharedMat;
                 busRenderer.sharedMaterials = materialArray;
             }
-        }
-
-        private void CheckForComplete()
-        {
-            if (seatedStickmanCount != 3 || GameplayManager.instance.GetIsChangingGoal()) return;
-            GameplayManager.instance.SetIsChangingGoal(true);
-            CompleteAnimation();
         }
 
         private void CompleteAnimation()
@@ -73,6 +64,9 @@ namespace BusJamClone.Scripts.Runtime.Models
             HandleSeat();
             AddStickman(1);
             IncreaseSeatIndex();
+            if (seatedStickmanCount != 3 || GameplayManager.instance.GetIsChangingGoal()) return;
+            GameplayManager.instance.SetIsChangingGoal(true);
+            DOVirtual.DelayedCall(0.3f, CompleteAnimation);
         }
 
         private void HandleCarDoorAnimation()
@@ -83,7 +77,7 @@ namespace BusJamClone.Scripts.Runtime.Models
         private void HandleSeat()
         {
             var seat = GetEmptySeat();
-            seat.stickmanRenderer.material.color = gameColors.ActiveMaterials[(int)busColor].color;
+            seat.stickmanRenderer.material.color = gameColors.activeMaterials[(int)busColor].color;
             seat.seatedStickman.SetActive(true);
             foreach (var seatRenderer in seat.seatRenderers)
             {
@@ -93,7 +87,7 @@ namespace BusJamClone.Scripts.Runtime.Models
             var localScale = seat.seatParent.transform.localScale;
             seat.seatParent.transform.DOScale(localScale * 1.1f, 0.15f).OnComplete(() =>
             {
-                seat.seatParent.transform.DOScale(localScale, 0.15f).OnComplete(CheckForComplete);
+                seat.seatParent.transform.DOScale(localScale, 0.15f);
             });
         }
 
@@ -127,17 +121,7 @@ namespace BusJamClone.Scripts.Runtime.Models
         {
             return busColor;
         }
-
-        public bool GetIsMoving()
-        {
-            return isMoving;
-        }
-
-        public void SetCanComplete(bool flag)
-        {
-            canComplete = flag;
-        }
-
+        
         public Transform GetEntranceTransform()
         {
             return busEntranceTransform;

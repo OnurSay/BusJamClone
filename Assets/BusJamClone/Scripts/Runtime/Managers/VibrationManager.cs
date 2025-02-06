@@ -6,6 +6,8 @@ namespace BusJamClone.Scripts.Runtime.Managers
     public class VibrationManager : MonoBehaviour
     {
         public static VibrationManager instance;
+        
+        [Header("Parameters")]
         private float intensity, sharpness;
 
         

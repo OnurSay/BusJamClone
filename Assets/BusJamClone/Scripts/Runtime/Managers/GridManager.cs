@@ -8,9 +8,10 @@ namespace BusJamClone.Scripts.Runtime.Managers
     public class GridManager : MonoBehaviour
     {
         public static GridManager instance;
-        public int width, height;
+        
+        [Header("Cached References")]
         [SerializeField] private GridBase[,] gridBaseArray;
-        public AStarPathfinding pathfinder;
+        [SerializeField] private AStarPathfinding pathfinder;
         [SerializeField] private LevelContainer currentLevel;
 
         private void Awake()
@@ -33,10 +34,8 @@ namespace BusJamClone.Scripts.Runtime.Managers
                 Destroy(this);
         }
 
-        public void Init(int w, int h, GridBase[,] gridBases, LevelContainer level)
+        public void Init(GridBase[,] gridBases, LevelContainer level)
         {
-            width = w;
-            height = h;
             
             gridBaseArray = gridBases;
             currentLevel = level;
@@ -47,6 +46,10 @@ namespace BusJamClone.Scripts.Runtime.Managers
         {
             currentLevel.HandleGridBasesPathfinding(gridBaseArray);
         }
-        
+
+        public AStarPathfinding GetPathfinder()
+        {
+            return pathfinder;
+        }
     }
 }

@@ -2,24 +2,27 @@ using System.Collections.Generic;
 using BusJamClone.Scripts.Runtime.Managers;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace BusJamClone.Scripts.Runtime.Models
 {
     public class GridBase : MonoBehaviour
     {
-        public Stickman stickman;
-        public Renderer gridRenderer;
-        public GameObject wallObject;
-        public int x, y;
-        public bool isSecret;
-        public bool isClosed;
-        public bool visited;
-        public float gCost, hCost;
-        public float fCost => gCost + hCost;
-        public GridBase parent;
-        public bool hasPath;
-        public List<GridBase> closestPath;
+        [Header("Cached References")] 
+        [SerializeField] protected Stickman stickman;
+        [SerializeField] private Renderer gridRenderer;
+        [SerializeField] private GameObject wallObject;        
+        [SerializeField] private GridBase parent;        
+        [SerializeField] private List<GridBase> closestPath;
+
+        [Header("Parameters")]
+        [SerializeField] private int x, y;
+        [SerializeField] private float gCost, hCost;
+        [SerializeField] private float fCost => gCost + hCost;
+
+        [Header("Flags")]
+        [SerializeField] private bool isSecret;
+        [SerializeField] private bool isClosed;
+        [SerializeField] private bool visited;
 
         private void Start()
         {
@@ -29,28 +32,26 @@ namespace BusJamClone.Scripts.Runtime.Models
         }
 
         public void HandlePath()
-        { 
+        {
             if (!stickman) return;
             UniTask.SwitchToTaskPool();
-            closestPath = GridManager.instance.pathfinder.FindPath(new Vector2Int(x, y));
+            closestPath = GridManager.instance.GetPathfinder().FindPath(new Vector2Int(x, y));
             UniTask.SwitchToMainThread();
-            GridManager.instance.pathfinder.ResetVisitedStates();
+            GridManager.instance.GetPathfinder().ResetVisitedStates();
             if (closestPath == null)
             {
-                hasPath = false;
                 stickman.DisableInteraction();
             }
             else
             {
-                hasPath = true;
                 stickman.EnableInteraction();
             }
         }
 
-        public void Init(Stickman stkMan, bool flag, int x, int y)
+        public void Init(Stickman stkMan, bool flag, int xAxis, int yAxis)
         {
-            this.x = x;
-            this.y = y;
+            x = xAxis;
+            y = yAxis;
 
             if (!stkMan)
             {
@@ -69,8 +70,8 @@ namespace BusJamClone.Scripts.Runtime.Models
             gridRenderer.enabled = false;
             wallObject.SetActive(true);
         }
-        
-        public void ResetVisited()  
+
+        public void ResetVisited()
         {
             visited = false;
         }
@@ -78,7 +79,75 @@ namespace BusJamClone.Scripts.Runtime.Models
         public void DissociateStickman()
         {
             stickman = null;
-            hasPath = false;
+        }
+
+        public List<GridBase> GetClosestPath()
+        {
+            return closestPath;
+        }
+
+        public int GetYAxis()
+        {
+            return y;
+        }
+
+        public int GetXAxis()
+        {
+            return x;
+        }
+
+        public GridBase GetBaseParent()
+        {
+            return parent;
+        }
+
+        public void SetBaseParent(GridBase newParent)
+        {
+            parent = newParent;
+        }
+        public float GetFCost()
+        {
+            return fCost;
+        }
+
+        public float GetHCost()
+        {
+            return hCost;
+        }
+
+        public float GetGCost()
+        {
+            return gCost;
+        }
+
+        public void SetHCost(float newHCost)
+        {
+            hCost = newHCost;
+        }
+
+        public void SetGCost(float newGCost)
+        {
+            gCost = newGCost;
+        }
+
+        public bool GetVisited()
+        {
+            return visited;
+        }
+
+        public bool GetIsClosed()
+        {
+            return isClosed;
+        }
+
+        public bool GetStickman()
+        {
+            return stickman;
+        }
+
+        public void SetVisited(bool flag)
+        {
+            visited = flag;
         }
     }
 }

@@ -5,16 +5,8 @@ namespace BusJamClone.Scripts.Runtime.Managers
 {
     public class InteractionManager : MonoBehaviour
     {
-        private Camera mainCam;
+        [Header("Parameters")] 
         public LayerMask stickmanLayer;
-        private GameplayManager gameplayManager;
-        public float selectRadius;
-
-        private void Start()
-        {
-            mainCam = Camera.main;
-            gameplayManager = GameplayManager.instance;
-        }
 
         void Update()
         {
@@ -37,7 +29,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
         void ProcessRaycastInteraction()
         {
-            var ray = mainCam.ScreenPointToRay(Input.mousePosition);
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             if (!TryRayCast(ray, out var hitInfo, stickmanLayer)) return;
             if (!hitInfo.transform || !hitInfo.transform.CompareTag("Stickman")) return;
@@ -53,17 +45,23 @@ namespace BusJamClone.Scripts.Runtime.Managers
         {
             if (!hitInfo.transform.TryGetComponent(out Stickman stickman)) return;
 
+            if (!TimeManager.instance.GetIsTimerActive())
+            {
+                TimeManager.instance.StartTimer();
+                UIManager.instance.StopBlinkTimer();
+            }
+
             if (VibrationManager.instance)
             {
                 VibrationManager.instance.Light();
             }
 
-            if (!stickman.GetHasPath() && stickman.belongedGrid.y != 0) return;
-            if (stickman.isMoving) return;
+            if (!stickman.GetHasPath() && stickman.GetBelongedGrid().GetYAxis() != 0) return;
+            if (stickman.GetIsMoving()) return;
             var currentGoal = GameplayManager.instance.GetCurrentBus();
 
-            var path = stickman.belongedGrid.closestPath;
-            if (stickman.stickmanColorType == currentGoal.GetColor() &&
+            var path = stickman.GetBelongedGrid().GetClosestPath();
+            if (stickman.GetColor() == currentGoal.GetColor() &&
                 currentGoal.GetComingStickmanCount() + 1 <= 3)
             {
                 currentGoal.AddComingStickman(1);

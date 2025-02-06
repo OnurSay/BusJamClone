@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using BusJamClone.Scripts.Data;
 using BusJamClone.Scripts.Runtime.Managers;
@@ -6,19 +7,23 @@ using UnityEditor.AddressableAssets;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using Random = UnityEngine.Random;
 
 namespace BusJamClone.Scripts.Utilities
 {
     public class AddressablePrefabLoader : MonoBehaviour
     {
-        [Header("Cached References")] [SerializeField]
-        private GameplayManager gameplayManager;
-
+        [Header("Cached References")] 
+        [SerializeField] private GameplayManager gameplayManager;
         [SerializeField] private GridManager gridManager;
         [SerializeField] private TimeManager timeManager;
         private GameObject loadedPrefabInstance;
 
         [Header("Variables")] public string levelGroupName = "LevelsGroup";
+
+#if UNITY_EDITOR
+        [Header("Editor")] public Action<GameObject> callbackAction;
+#endif
 
         private void Start()
         {
@@ -59,6 +64,29 @@ namespace BusJamClone.Scripts.Utilities
                 Debug.LogError($"Failed to load prefab from Addressables group: {levelGroupName}");
             }
         }
+#if UNITY_EDITOR
+
+        private void LoadPrefabEditor(string prefabAddress)
+        {
+            Addressables.LoadAssetAsync<GameObject>(prefabAddress).Completed += OnPrefabLoadedEditor;
+        }
+
+        private void OnPrefabLoadedEditor(AsyncOperationHandle<GameObject> handle)
+        {
+            if (handle.Status == AsyncOperationStatus.Succeeded)
+            {
+                loadedPrefabInstance = Instantiate(handle.Result);
+                callbackAction?.Invoke(loadedPrefabInstance);
+
+                Debug.Log($"Loaded and instantiated prefab: {handle.Result.name}");
+            }
+            else
+            {
+                Debug.LogError($"Failed to load prefab from Addressables group: {levelGroupName}");
+            }
+        }
+
+#endif
 
         private void HandleTransitions()
         {
@@ -68,7 +96,12 @@ namespace BusJamClone.Scripts.Utilities
                 DOVirtual.DelayedCall(Random.Range(0.5f, 1f), () =>
                 {
                     UIManager.instance.CloseLoadingScreen();
-                    UIManager.instance.CloseTransition();
+                    UIManager.instance.CloseTransition(() =>
+                    {
+                        TimeManager.instance.SetTimerTMP(UIManager.instance.GetTimerTMP());
+                        LevelManager.instance.SetLevelTMP(UIManager.instance.GetLevelTMP());
+                        UIManager.instance.EnableSettingsButton();
+                    });
                 });
             });
         }
@@ -80,5 +113,15 @@ namespace BusJamClone.Scripts.Utilities
                 Addressables.ReleaseInstance(loadedPrefabInstance);
             }
         }
+
+#if UNITY_EDITOR
+
+        public GameObject ManualPrefabLoader(string prefabAddress, Action<GameObject> callback)
+        {
+            callbackAction = callback;
+            LoadPrefabEditor(prefabAddress);
+            return loadedPrefabInstance;
+        }
+#endif
     }
 }

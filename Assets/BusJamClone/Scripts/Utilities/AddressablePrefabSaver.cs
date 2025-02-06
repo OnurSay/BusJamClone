@@ -18,16 +18,17 @@ namespace BusJamClone.Scripts.Utilities
                 Directory.CreateDirectory(prefabBasePath);
                 AssetDatabase.Refresh();
             }
+
             var prefabName = $"Level_{levelIndex}";
             var prefabPath = prefabBasePath + prefabName + ".prefab";
 
-            var prefab = PrefabUtility.SaveAsPrefabAsset(levelRoot, prefabPath);
+            PrefabUtility.SaveAsPrefabAsset(levelRoot, prefabPath);
             Debug.Log($"Prefab saved at: {prefabPath}");
 
-            AddToAddressables(prefab, prefabPath, addressableGroupName);
+            AddToAddressables(prefabPath, addressableGroupName);
         }
-        
-        private void AddToAddressables(GameObject prefab, string prefabPath, string groupName)
+
+        private void AddToAddressables(string prefabPath, string groupName)
         {
             var settings = AddressableAssetSettingsDefaultObject.Settings;
 
@@ -36,7 +37,7 @@ namespace BusJamClone.Scripts.Utilities
                 Debug.LogError("Addressables settings not found. Please initialize Addressables.");
                 return;
             }
-            
+
             var group = settings.FindGroup(groupName);
             if (!group)
             {
@@ -52,6 +53,43 @@ namespace BusJamClone.Scripts.Utilities
             settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryAdded, entry, true);
             AssetDatabase.SaveAssets();
             Debug.Log($"Prefab assigned to Addressables group: {groupName}");
+        }
+
+        public void RemovePrefabFromAddressablesAndDelete(int levelIndex)
+        {
+            var settings = AddressableAssetSettingsDefaultObject.Settings;
+
+            if (!settings)
+            {
+                Debug.LogError("Addressables settings not found. Please initialize Addressables.");
+                return;
+            }
+
+            var prefabName = $"Level_{levelIndex}";
+            var prefabPath = prefabBasePath + prefabName + ".prefab";
+            var assetGUID = AssetDatabase.AssetPathToGUID(prefabPath);
+            var entry = settings.FindAssetEntry(assetGUID);
+
+            if (entry != null)
+            {
+                settings.RemoveAssetEntry(entry.guid);
+                Debug.Log($"Prefab removed from Addressables: {prefabPath}");
+            }
+            else
+            {
+                Debug.LogWarning("Prefab not found in Addressables group.");
+            }
+
+            if (File.Exists(prefabPath))
+            {
+                AssetDatabase.DeleteAsset(prefabPath);
+                AssetDatabase.Refresh();
+                Debug.Log($"Prefab deleted from project: {prefabPath}");
+            }
+            else
+            {
+                Debug.LogWarning("Prefab file does not exist.");
+            }
         }
     }
 }

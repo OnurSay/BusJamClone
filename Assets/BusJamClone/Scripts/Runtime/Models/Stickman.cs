@@ -10,18 +10,21 @@ namespace BusJamClone.Scripts.Runtime.Models
 {
     public class Stickman : MonoBehaviour
     {
-        public SkinnedMeshRenderer skinnedMeshRenderer;
-        public GameColors gameColors;
-        public Material startMat;
-        public GridBase belongedGrid;
-        public LevelData.GridColorType stickmanColorType;
+        [Header("Cached References")] 
+        [SerializeField] private SkinnedMeshRenderer skinnedMeshRenderer;
+        [SerializeField] private GameColors gameColors;
+        [SerializeField] private Material startMat;
+        [SerializeField] private GridBase belongedGrid;
+        [SerializeField] private LevelData.GridColorType stickmanColorType;
         [SerializeField] private Rigidbody rb;
-        [SerializeField] private Collider triggerCollider;
-        public bool isMoving;
-        [SerializeField] private bool hasPath;
         [SerializeField] private Outline stickmanOutline;
         [SerializeField] private StickmanMovement stickmanMovement;
         [SerializeField] private GameObject reservedCap;
+        [SerializeField] private Collider triggerCollider;
+
+        [Header("Parameters")] 
+        [SerializeField] private bool isMoving;
+        [SerializeField] private bool hasPath;
         [SerializeField] private bool isReserved;
 
         public void Init(LevelData.GridColorType colorType, GridBase gridCell)
@@ -33,7 +36,7 @@ namespace BusJamClone.Scripts.Runtime.Models
         private void SetColor(LevelData.GridColorType colorType)
         {
             stickmanColorType = colorType;
-            var material = gameColors.ActiveMaterials[(int)stickmanColorType];
+            var material = gameColors.activeMaterials[(int)stickmanColorType];
             skinnedMeshRenderer.sharedMaterial = material;
         }
 
@@ -179,6 +182,16 @@ namespace BusJamClone.Scripts.Runtime.Models
         public void KillTween()
         {
             DOTween.Kill(transform);
+        }
+
+        public GridBase GetBelongedGrid()
+        {
+            return belongedGrid;
+        }
+
+        public bool GetIsMoving()
+        {
+            return isMoving;
         }
     }
 }

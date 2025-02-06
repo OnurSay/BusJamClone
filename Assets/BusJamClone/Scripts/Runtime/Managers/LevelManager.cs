@@ -1,6 +1,4 @@
-using System.Linq;
-using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Settings;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,12 +8,15 @@ namespace BusJamClone.Scripts.Runtime.Managers
     {
         public static LevelManager instance;
 
-        [Header("Flags")] public bool isGamePlayable;
-        public bool isLevelFailed = false;
+        [Header("Flags")] 
+        public bool isGamePlayable;
+        public bool isLevelFailed;
         public bool isGainedThisLevelCoin = false;
 
-        public int levelIndex;
+        [Header("Parameters")]
+        [SerializeField] private int levelIndex;
         [SerializeField] private int totalLevelCount;
+        [SerializeField] private int totalPlayedLevelCount;
 
         private void Awake()
         {
@@ -48,16 +49,8 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
         private void FetchPlayerPrefs()
         {
-            levelIndex = PlayerPrefs.GetInt("CurrentLevel", 1);
-        }
-
-        private void Start()
-        {
-            LevelStarted();
-        }
-
-        private void LevelStarted()
-        {
+            levelIndex = PlayerPrefs.GetInt("CurrentLevel", 0);
+            totalPlayedLevelCount = PlayerPrefs.GetInt("TotalPlayedLevel", 1);
         }
 
         public void LevelIncrease()
@@ -65,7 +58,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
             IncreaseLevelIndex();
             LoadLevel();
         }
-        
+
         private void LoadLevel()
         {
             var asyncOperation = SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
@@ -76,12 +69,14 @@ namespace BusJamClone.Scripts.Runtime.Managers
         private void IncreaseLevelIndex()
         {
             levelIndex++;
+            totalPlayedLevelCount++;
             if (levelIndex >= totalLevelCount)
             {
                 levelIndex = 0;
             }
 
             PlayerPrefs.SetInt("CurrentLevel", levelIndex);
+            PlayerPrefs.SetInt("TotalPlayedLevel", totalPlayedLevelCount);
         }
 
         public void RestartLevel()
@@ -97,6 +92,12 @@ namespace BusJamClone.Scripts.Runtime.Managers
         public void SetTotalLevelCount(int levelCount)
         {
             totalLevelCount = levelCount;
+        }
+
+        public void SetLevelTMP(TextMeshProUGUI levelTMP)
+        {
+            levelTMP.text = "Level " + totalPlayedLevelCount;
+            UIManager.instance.OpenLevelText();
         }
     }
 }

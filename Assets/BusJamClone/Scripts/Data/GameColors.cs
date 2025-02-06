@@ -1,14 +1,18 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
-[CreateAssetMenu(fileName = "Game Color", menuName = "Game Color")]
-public class GameColors : ScriptableObject
+namespace BusJamClone.Scripts.Data
 {
+    [CreateAssetMenu(fileName = "Game Color", menuName = "Game Color")]
+    public class GameColors : ScriptableObject
+    {
 
-    public Color[] ActiveColors;
-    public Material[] ActiveMaterials;
-    public Material[] ShadowMaterials;
-    public Material[] TrailMaterials;
+        public Color[] activeColors;
+        public Material[] activeMaterials;
+        public Material[] shadowMaterials;
+        public Material[] trailMaterials;
 
    
     
+    }
 }

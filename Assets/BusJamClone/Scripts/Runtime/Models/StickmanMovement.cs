@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using BusJamClone.Scripts.Runtime.Interfaces;
 using BusJamClone.Scripts.Runtime.Managers;
 using UnityEngine;
@@ -7,16 +8,25 @@ namespace BusJamClone.Scripts.Runtime.Models
 {
     public class StickmanMovement : MonoBehaviour, IPathFollower
     {
+        [Header("Cached References")]        
+        [SerializeField] private Animator anim;
+
+        [Header("Parameters")]
+        [SerializeField] private float runSpeed = 5f;
+        [SerializeField] private float rotationSpeed = 10f;
+        [SerializeField] private float stoppingDistance = 0.1f;
         private Vector3[] path;
-        public float runSpeed = 5f;
-        public float rotationSpeed = 10f;
-        public float stoppingDistance = 0.1f;
         private int currentWaypointIndex;
+        
+        [Header("Flags")]
         private bool isMoving;
         private bool isPathSet;
-        public Animator anim;
-        private static readonly int isRunning = Animator.StringToHash("isRunning");
+        
+        [Header("Actions")]        
         private Action onCompleteCallback;
+        
+        [Header("Constants")]
+        private static readonly int isRunning = Animator.StringToHash("isRunning");
 
         private void OnEnable()
         {
@@ -42,7 +52,7 @@ namespace BusJamClone.Scripts.Runtime.Models
             }
             else
             {
-                if(LevelManager.instance.isLevelFailed) return;
+                if (LevelManager.instance.isLevelFailed) return;
                 FinalizeMovement();
             }
         }
@@ -90,16 +100,46 @@ namespace BusJamClone.Scripts.Runtime.Models
         {
             StopMovement();
 
-            path = newPath;
+            if (path != null)
+            {
+                var newPathList = path.ToList();
+                newPathList.Add(newPath[^1]);
+                path = newPathList.ToArray();
+            }
+            else
+            {
+                path = newPath;
+            }
+
+            isPathSet = true;
+
             currentWaypointIndex = Mathf.Clamp(currentWaypointIndex, 0, path.Length - 1);
             onCompleteCallback = onComplete;
-
             StartMovement();
         }
 
         private void StopMovement()
         {
-            path = null;
+            if (path != null)
+            {
+                if (currentWaypointIndex >= path.Length - 1)
+                {
+                    currentWaypointIndex = 0;
+                    path = null;
+                }
+                else
+                {
+                    var newList = path.ToList();
+                    newList.RemoveAt(newList.Count - 1);
+                    path = newList.ToArray();
+                }
+            }
+            else
+            {
+                currentWaypointIndex = 0;
+                path = null;
+            }
+
             isPathSet = false;
             anim.SetBool(isRunning, false);
             isMoving = false;

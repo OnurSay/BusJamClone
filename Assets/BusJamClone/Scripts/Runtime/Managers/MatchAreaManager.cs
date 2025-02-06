@@ -7,10 +7,12 @@ namespace BusJamClone.Scripts.Runtime.Managers
 {
     public class MatchAreaManager : MonoBehaviour
     {
+        public static MatchAreaManager instance;
+
+        [Header("Cached References")] 
         [SerializeField] private List<MatchArea> matchAreas;
         [SerializeField] private List<MatchArea> claimedMatchAreas;
 
-        public static MatchAreaManager instance;
 
         private void OnEnable()
         {
@@ -56,8 +58,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
         private void CheckMatchAreas()
         {
-            if (GameplayManager.instance.GetIsChangingGoal() ||
-                GameplayManager.instance.GetStickmanThroughBus().Count > 0) return;
+            if (GameplayManager.instance.GetIsChangingGoal()) return;
 
             if (claimedMatchAreas.Count != matchAreas.Count || claimedMatchAreas.Count == 0 ||
                 matchAreas.Count == 0) return;

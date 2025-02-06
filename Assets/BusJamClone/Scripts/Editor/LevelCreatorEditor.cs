@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using BusJamClone.Scripts.Runtime.LevelCreation;
 using UnityEditor;
 using UnityEngine;
+using System;
+using System.Linq;
+using BusJamClone.Scripts.Data;
 
 namespace BusJamClone.Scripts.Editor
 {
@@ -30,11 +33,13 @@ namespace BusJamClone.Scripts.Editor
             }
 
             DrawGrid();
-            DrawSaveLoadButtons();
+            DrawSaveLoadButtons(DisplayColorStatus());
+
             if (EditorGUI.EndChangeCheck())
             {
-                Undo.RecordObject(levelCreator, "Change Level Index");
+                Undo.RecordObject(levelCreator, "Change Level Goals");
                 EditorUtility.SetDirty(levelCreator);
+                Repaint();
             }
 
             serializedObject.ApplyModifiedProperties();
@@ -52,9 +57,7 @@ namespace BusJamClone.Scripts.Editor
                 return false;
             }
 
-            var isGridBoundsCorrect = (levelCreator.gridWidth * levelCreator.gridHeight) ==
-                                      levelCreator.GetLevelData().GetGrid().Length;
-            return isGridBoundsCorrect;
+            return true;
         }
 
         private void DrawGridProperties()
@@ -95,7 +98,7 @@ namespace BusJamClone.Scripts.Editor
 
         private void DrawGrid()
         {
-            var style = new GUIStyle(GUI.skin.button) { fontSize = 8 };
+            var style = new GUIStyle(GUI.skin.button) { fontSize = 64 };
             var grid = levelCreator.GetLevelData().GetGrid();
             if (ReferenceEquals(grid, null) || grid.Length.Equals(0))
             {
@@ -108,18 +111,50 @@ namespace BusJamClone.Scripts.Editor
             {
                 EditorGUILayout.BeginHorizontal();
 
-                for (var x = levelCreator.gridWidth-1; x >= 0 ; x--)
+                for (var x = levelCreator.gridWidth - 1; x >= 0; x--)
                 {
                     EditorGUILayout.BeginVertical();
 
-                    var cellText = x + "x" + y;
-
                     var cell = levelCreator.GetLevelData().GetGridCell(x, y);
 
-                    var subColors = new List<Color> { levelCreator.gameColors.ActiveColors[(int)cell.stackData.stickmanColorType] };
+                    var subColors = new List<Color>
+                        { levelCreator.GetGameColors().activeColors[(int)cell.stackData.stickmanColorType] };
+                    var text = "";
 
-                    var buttonRect = GUILayoutUtility.GetRect(new GUIContent(cellText), style, GUILayout.Width(75),
+                    if (cell.stackData.isSecret)
+                    {
+                        if (text == "")
+                        {
+                            text += "S";
+                        }
+                        else
+                        {
+                            text += "," + "S";
+                        }
+                    }
+
+                    if (cell.stackData.isReserved)
+                    {
+                        if (text == "")
+                        {
+                            text += "R";
+                        }
+                        else
+                        {
+                            text += "," + "R";
+                        }
+                    }
+                    
+                    var buttonRect = GUILayoutUtility.GetRect(new GUIContent(text), style, GUILayout.Width(75),
                         GUILayout.Height(75));
+                    
+                    var textStyle = new GUIStyle
+                    {
+                        fontSize = 16,
+                        fontStyle = FontStyle.Bold,
+                        normal = { textColor = Color.black },
+                    };
+                   
 
                     Rect[] subRects =
                     {
@@ -133,6 +168,11 @@ namespace BusJamClone.Scripts.Editor
                                 ? Color.black + new Color(0.1f * t, 0.1f * t, 0.1f * t)
                                 : subColors[t]);
                     }
+                   
+                    Handles.Label(
+                        new Vector3(buttonRect.x, buttonRect.y, 0),
+                        text, textStyle);
+                    
 
                     for (var o = subRects.Length - 1; o >= 0; o--)
                     {
@@ -163,7 +203,7 @@ namespace BusJamClone.Scripts.Editor
             }
         }
 
-        private void DrawSaveLoadButtons()
+        private void DrawSaveLoadButtons(bool canInteractable)
         {
             EditorGUILayout.Space();
             EditorGUILayout.HelpBox("Don't forget the save grid!", MessageType.Warning);
@@ -173,14 +213,71 @@ namespace BusJamClone.Scripts.Editor
 
             EditorGUILayout.BeginHorizontal();
 
-
+            GUI.enabled = canInteractable;
             if (GUILayout.Button("Save"))
             {
                 levelCreator.SaveLevel();
             }
-
+            
 
             EditorGUILayout.EndHorizontal();
+        }
+
+        private bool DisplayColorStatus()
+        {
+            var grid = levelCreator.GetLevelData().GetGrid();
+            var isEverythingFine = false;
+
+            foreach (LevelData.GridColorType colorType in Enum.GetValues(typeof(LevelData.GridColorType)))
+            {
+                if (colorType is LevelData.GridColorType.None or LevelData.GridColorType.Close)
+                    continue;
+
+                var colorCount = grid.Cast<GridCell>().Count(cell => cell.stackData.stickmanColorType == colorType);
+
+                if (colorCount == 0)
+                    continue;
+
+                var colorName = colorType.ToString();
+                var busCount = DisplayBusStatus(colorType);
+                if (colorCount % 3 == 0)
+                {
+                    
+                    if (busCount == colorCount / 3)
+                    {
+                        EditorGUILayout.HelpBox(
+                            $"{colorName} Color: OK ({colorCount} {colorName} Color with {busCount} Bus Count)",
+                            MessageType.Info);
+                        isEverythingFine = true;
+                    }
+                    else
+                    {
+                        EditorGUILayout.HelpBox(
+                            $"{colorName} Color: NOT OK ({colorCount} {colorName} Color with {busCount} Bus Count)",
+                            MessageType.Error);
+                        isEverythingFine = false;
+                    }
+                }
+                else
+                {
+                    EditorGUILayout.HelpBox(
+                        $"{colorName} Color: NOT OK ({colorCount} {colorName} Color with {busCount} Bus Count) ",
+                        MessageType.Error);
+                    isEverythingFine = false;
+
+                }
+
+            }
+
+            return isEverythingFine;
+        }
+
+        private int DisplayBusStatus(LevelData.GridColorType gridColorType)
+        {
+            if (levelCreator.levelGoals == null || levelCreator.levelGoals.Count == 0)
+                return 0;
+
+            return levelCreator.levelGoals.Count(goal => gridColorType == goal.colorType);
         }
     }
 }

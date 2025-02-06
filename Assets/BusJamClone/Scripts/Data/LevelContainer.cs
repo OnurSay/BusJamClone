@@ -1,28 +1,31 @@
 using System.Collections.Generic;
 using BusJamClone.Scripts.Runtime.Managers;
 using BusJamClone.Scripts.Runtime.Models;
-using System;
-using System.Linq;
-using UnityEditor;
+using BusJamClone.Scripts.Runtime.LevelCreation;
 using UnityEngine;
 
 namespace BusJamClone.Scripts.Data
 {
     public class LevelContainer : MonoBehaviour
     {
+        [Header("Cached References")]
         [SerializeField] private GridSaveClass[] levelGridBases;
         [SerializeField] private List<BusScript> levelBuses;
+        [SerializeField] private List<LevelGoal> levelGoals;
+        
+        [Header("Parameters")]
         [SerializeField] private int gridWidth;
         [SerializeField] private int gridHeight;
         [SerializeField] private int levelTime;
 
-        public void Init(int width, int height, int time, GridBase[,] gridBases, List<BusScript> busScripts)
+        public void Init(int width, int height, int time, GridBase[,] gridBases, List<BusScript> busScripts, List<LevelGoal> goals)
         {
             CopyGridArray(gridBases);
             gridWidth = width;
             gridHeight = height;
             levelBuses = busScripts;
             levelTime = time;
+            levelGoals = goals;
         }
 
         private void CopyGridArray(GridBase[,] gridBases)
@@ -58,7 +61,7 @@ namespace BusJamClone.Scripts.Data
         private void InitializeGridManager(GridManager gridManager)
         {
             var gridBasesArray = MorphTo2DArray(levelGridBases);
-            gridManager.Init(gridWidth, gridHeight, gridBasesArray, this);
+            gridManager.Init(gridBasesArray, this);
             HandleGridBasesPathfinding(gridBasesArray);
         }
 
@@ -91,6 +94,16 @@ namespace BusJamClone.Scripts.Data
         private void InitializeTimer(TimeManager timeManager)
         {
             timeManager.SetTimer(levelTime);
+        }
+
+        public List<LevelGoal> GetLevelGoals()
+        {
+            return levelGoals;
+        }
+
+        public int GetLevelTime()
+        {
+            return levelTime;
         }
     }
 

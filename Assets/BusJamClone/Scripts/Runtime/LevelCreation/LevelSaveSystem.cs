@@ -8,18 +8,18 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
 {
     public static class LevelSaveSystem
     {
-        static readonly string LevelDataPath = Application.dataPath + $"/Resources/LevelData/";
-        static readonly string BackupLevelDataPath = Application.dataPath + $"/Resources/BackupLevelData/";
+        static readonly string levelDataPath = Application.dataPath + $"/Resources/LevelData/";
+        static readonly string backupLevelDataPath = Application.dataPath + $"/Resources/BackupLevelData/";
 
         public static LevelData LoadLevel(int levelIndex)
         {
-            if (!Directory.Exists(LevelDataPath))
+            if (!Directory.Exists(levelDataPath))
             {
                 Debug.LogWarning("LevelData directory not found!");
                 return null;
             }
 
-            var filePath = LevelDataPath + $"Level{levelIndex}.json";
+            var filePath = levelDataPath + $"Level{levelIndex}.json";
             if (!File.Exists(filePath))
             {
                 Debug.LogWarning($"Level{levelIndex}.json not found in the {filePath}");
@@ -32,12 +32,12 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
 
         public static void SaveLevel(LevelData levelGrid, int levelIndex)
         {
-            if (!Directory.Exists(LevelDataPath))
+            if (!Directory.Exists(levelDataPath))
             {
-                Directory.CreateDirectory(LevelDataPath);
+                Directory.CreateDirectory(levelDataPath);
             }
 
-            var filePath = LevelDataPath + $"Level{levelIndex}.json";
+            var filePath = levelDataPath + $"Level{levelIndex}.json";
             if (File.Exists(filePath))
             {
                 BackupLevel(levelIndex);
@@ -52,13 +52,13 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
 
         static void BackupLevel(int levelIndex)
         {
-            if (!Directory.Exists(BackupLevelDataPath))
+            if (!Directory.Exists(backupLevelDataPath))
             {
-                Directory.CreateDirectory(BackupLevelDataPath);
+                Directory.CreateDirectory(backupLevelDataPath);
             }
 
             var backupLevel = Resources.Load<TextAsset>($"LevelData/Level{levelIndex}").text;
-            var filePath = BackupLevelDataPath + $"Level{levelIndex}.json";
+            var filePath = backupLevelDataPath + $"Level{levelIndex}.json";
             File.WriteAllText(filePath, backupLevel);
         }
 

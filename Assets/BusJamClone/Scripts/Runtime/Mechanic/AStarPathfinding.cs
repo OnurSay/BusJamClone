@@ -7,6 +7,7 @@ namespace BusJamClone.Scripts.Runtime.Mechanic
 {
     public class AStarPathfinding
     {
+        [Header("Parameters")]
         private readonly GridBase[,] gridBases;
         private readonly int gridWidth;
         private readonly int gridHeight;
@@ -31,21 +32,21 @@ namespace BusJamClone.Scripts.Runtime.Mechanic
                 var currentNode = GetLowestFCostNode(openSet);
                 openSet.Remove(currentNode);
                 closedSet.Add(currentNode);
-                currentNode.visited = true;
+                currentNode.SetVisited(true);
 
-                if (currentNode.y == 0)
+                if (currentNode.GetYAxis() == 0)
                     return RetracePath(startNode, currentNode);
 
                 foreach (var neighbor in GetNeighbors(currentNode))
                 {
-                    if (neighbor.visited || neighbor.isClosed || closedSet.Contains(neighbor) || neighbor.stickman)
+                    if (neighbor.GetVisited() || neighbor.GetIsClosed() || closedSet.Contains(neighbor) || neighbor.GetStickman())
                         continue;
 
-                    var newGCost = currentNode.gCost + GetDistance(currentNode, neighbor);
-                    if (!(newGCost < neighbor.gCost) && openSet.Contains(neighbor)) continue;
-                    neighbor.gCost = newGCost;
-                    neighbor.hCost = GetHeuristic(neighbor);
-                    neighbor.parent = currentNode;
+                    var newGCost = currentNode.GetGCost() + GetDistance(currentNode, neighbor);
+                    if (!(newGCost < neighbor.GetGCost()) && openSet.Contains(neighbor)) continue;
+                    neighbor.SetGCost(newGCost);
+                    neighbor.SetHCost(GetHeuristic(neighbor));
+                    neighbor.SetBaseParent(currentNode);
 
                     if (!openSet.Contains(neighbor))
                         openSet.Add(neighbor);
@@ -58,7 +59,7 @@ namespace BusJamClone.Scripts.Runtime.Mechanic
         private GridBase GetLowestFCostNode(List<GridBase> openSet)
         {
             var bestNode = openSet[0];
-            foreach (var node in openSet.Where(node => node.fCost < bestNode.fCost))
+            foreach (var node in openSet.Where(node => node.GetFCost() < bestNode.GetFCost()))
                 bestNode = node;
             return bestNode;
         }
@@ -70,8 +71,8 @@ namespace BusJamClone.Scripts.Runtime.Mechanic
 
             foreach (var dir in directions)
             {
-                var newX = node.x + dir.x;
-                var newY = node.y + dir.y;
+                var newX = node.GetXAxis() + dir.x;
+                var newY = node.GetYAxis() + dir.y;
 
                 if (newX >= 0 && newX < gridWidth && newY >= 0 && newY < gridHeight)
                     neighbors.Add(gridBases[newX, newY]);
@@ -82,12 +83,12 @@ namespace BusJamClone.Scripts.Runtime.Mechanic
 
         private float GetDistance(GridBase a, GridBase b)
         {
-            return Vector2Int.Distance(new Vector2Int(a.x, a.y), new Vector2Int(b.x, b.y));
+            return Vector2Int.Distance(new Vector2Int(a.GetXAxis(), a.GetYAxis()), new Vector2Int(b.GetXAxis(), b.GetYAxis()));
         }
 
         private float GetHeuristic(GridBase node)
         {
-            return node.y; // Lower y-values are better
+            return node.GetYAxis(); 
         }
 
         private List<GridBase> RetracePath(GridBase startNode, GridBase endNode)
@@ -98,7 +99,7 @@ namespace BusJamClone.Scripts.Runtime.Mechanic
             while (currentNode != startNode)
             {
                 path.Add(currentNode);
-                currentNode = currentNode.parent;
+                currentNode = currentNode.GetBaseParent();
             }
 
             path.Reverse();

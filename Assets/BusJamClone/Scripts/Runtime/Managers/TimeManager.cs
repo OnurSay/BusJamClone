@@ -1,14 +1,28 @@
 using System;
+using TMPro;
 using UnityEngine;
 
 namespace BusJamClone.Scripts.Runtime.Managers
 {
     public class TimeManager : MonoBehaviour
-    {
+    {        
+        
+        public static TimeManager instance;
 
-        [SerializeField] private GameplayManager gameplayManager;
+        [Header("Cached References")]
+        private TextMeshProUGUI timerTMP;
+        
+        [Header("Parameters")]
         [SerializeField] private float levelTime;
         [SerializeField] private bool isTimerActive;
+
+        private void Awake()
+        {
+            if (!instance)
+            {
+                instance = this;
+            }
+        }
 
         private void Update()
         {
@@ -17,17 +31,22 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
         private void HandleTimer()
         {
-            if(!isTimerActive) return;
+            if (!isTimerActive) return;
             levelTime -= Time.deltaTime;
-            if (levelTime <= 0f)
+            timerTMP.text = TimeSpan.FromSeconds((int)levelTime).ToString(@"m\:ss");
+            
+            if (levelTime <= 10f)
             {
-                //TODO LOSE GAME;
+                UIManager.instance.StartBlinkTimer();
             }
+
+            if (levelTime > 0f) return;
+            PauseTimer();
+            GameplayManager.instance.LoseGame();
         }
 
         public void SetTimer(int time)
         {
-
             levelTime = time;
         }
 
@@ -35,7 +54,28 @@ namespace BusJamClone.Scripts.Runtime.Managers
         {
             isTimerActive = true;
         }
-        
 
+        public void PauseTimer()
+        {
+            isTimerActive = false;
+        }
+
+        public bool GetIsTimerActive()
+        {
+            return isTimerActive;
+        }
+
+        public void SetTimerTMP(TextMeshProUGUI timer)
+        {
+            timerTMP = timer;
+            timerTMP.text = TimeSpan.FromSeconds((int)levelTime).ToString(@"m\:ss");
+
+            UIManager.instance.OpenTimer();
+        }
+
+        public float GetTimeLeft()
+        {
+            return levelTime;
+        }
     }
 }

@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Game Config
   m_EditorClassIdentifier: 
   isAudioOn: 1
-  isVibrationOn: 1
+  isVibrationOn: 0

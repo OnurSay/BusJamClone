@@ -1,4 +1,3 @@
-using System.Collections;
 using BusJamClone.Scripts.Runtime.Managers;
 using UnityEngine;
 
@@ -6,6 +5,7 @@ namespace BusJamClone.Scripts.Runtime.Models
 {
     public class MatchArea : GridBase
     {
+        [Header("Flags")]
         [SerializeField] private bool isReserved;
 
         public void HandleNewGoal()
