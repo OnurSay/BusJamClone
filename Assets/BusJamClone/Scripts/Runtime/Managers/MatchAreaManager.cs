@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using BusJamClone.Scripts.Runtime.Models;
 using UnityEngine;
@@ -44,16 +43,10 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
             CheckMatchAreas();
         }
-
-        public void AddMatchArea(MatchArea matchArea)
-        {
-            if (matchAreas.Contains(matchArea)) return;
-            matchAreas.Add(matchArea);
-        }
-
+        
         public MatchArea GetEmptyArea()
         {
-            return matchAreas.Find(x => !x.HasStickman() && !x.IsReserved() ? x : null);
+            return matchAreas.Find(x => !x.HasStickman() && !x.IsTaken() ? x : null);
         }
 
         private void CheckMatchAreas()
@@ -62,7 +55,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
             if (claimedMatchAreas.Count != matchAreas.Count || claimedMatchAreas.Count == 0 ||
                 matchAreas.Count == 0) return;
-            GameplayManager.instance.LoseGame();
+            GameplayManager.instance.LoseGame(false);
         }
 
         public void AssignMatchArea(MatchArea claimedArea)

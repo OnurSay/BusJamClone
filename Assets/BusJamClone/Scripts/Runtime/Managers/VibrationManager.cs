@@ -9,7 +9,6 @@ namespace BusJamClone.Scripts.Runtime.Managers
         
         [Header("Parameters")]
         private float intensity, sharpness;
-
         
         private void Awake()
         {
@@ -48,6 +47,20 @@ namespace BusJamClone.Scripts.Runtime.Managers
             if (!GameplayManager.instance.GetVibration())
                 return;
             MMVibrationManager.Haptic(HapticTypes.HeavyImpact);
+        }
+
+        public void Win()
+        {
+            if (!GameplayManager.instance.GetVibration())
+                return;
+            MMVibrationManager.Haptic(HapticTypes.Success);
+        }
+        
+        public void Fail()
+        {
+            if (!GameplayManager.instance.GetVibration())
+                return;
+            MMVibrationManager.Haptic(HapticTypes.Failure);
         }
     }
 }

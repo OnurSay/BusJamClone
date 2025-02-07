@@ -42,7 +42,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
             if (levelTime > 0f) return;
             PauseTimer();
-            GameplayManager.instance.LoseGame();
+            GameplayManager.instance.LoseGame(true);
         }
 
         public void SetTimer(int time)
@@ -65,9 +65,10 @@ namespace BusJamClone.Scripts.Runtime.Managers
             return isTimerActive;
         }
 
-        public void SetTimerTMP(TextMeshProUGUI timer)
+        public void SetTimerTMP(TextMeshProUGUI timer,TextMeshProUGUI startScreenTimerTMP)
         {
             timerTMP = timer;
+            startScreenTimerTMP.text = "Level Time: " + TimeSpan.FromSeconds((int)levelTime).ToString(@"m\:ss");
             timerTMP.text = TimeSpan.FromSeconds((int)levelTime).ToString(@"m\:ss");
 
             UIManager.instance.OpenTimer();

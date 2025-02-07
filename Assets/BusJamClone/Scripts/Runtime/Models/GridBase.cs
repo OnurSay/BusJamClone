@@ -16,34 +16,33 @@ namespace BusJamClone.Scripts.Runtime.Models
 
         [Header("Parameters")]
         [SerializeField] private int x, y;
-        [SerializeField] private float gCost, hCost;
-        [SerializeField] private float fCost => gCost + hCost;
+        [SerializeField] private float gCost, hCost; 
+        private float fCost => gCost + hCost;
 
         [Header("Flags")]
-        [SerializeField] private bool isSecret;
         [SerializeField] private bool isClosed;
         [SerializeField] private bool visited;
-
-        private void Start()
-        {
-            if (!stickman) return;
-            if (!isSecret) return;
-            stickman.SetSecret();
-        }
 
         public void HandlePath()
         {
             if (!stickman) return;
+            
             UniTask.SwitchToTaskPool();
             closestPath = GridManager.instance.GetPathfinder().FindPath(new Vector2Int(x, y));
             UniTask.SwitchToMainThread();
+            
             GridManager.instance.GetPathfinder().ResetVisitedStates();
+            
             if (closestPath == null)
             {
                 stickman.DisableInteraction();
             }
             else
             {
+                if (stickman.GetIsSecret())
+                {
+                    stickman.ResetColor();
+                }
                 stickman.EnableInteraction();
             }
         }

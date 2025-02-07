@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace BusJamClone.Scripts.Data
 {
@@ -9,8 +8,6 @@ namespace BusJamClone.Scripts.Data
 
         public Color[] activeColors;
         public Material[] activeMaterials;
-        public Material[] shadowMaterials;
-        public Material[] trailMaterials;
 
    
     

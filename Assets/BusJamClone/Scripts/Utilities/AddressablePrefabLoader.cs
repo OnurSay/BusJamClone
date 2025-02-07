@@ -98,9 +98,11 @@ namespace BusJamClone.Scripts.Utilities
                     UIManager.instance.CloseLoadingScreen();
                     UIManager.instance.CloseTransition(() =>
                     {
-                        TimeManager.instance.SetTimerTMP(UIManager.instance.GetTimerTMP());
-                        LevelManager.instance.SetLevelTMP(UIManager.instance.GetLevelTMP());
+                        TimeManager.instance.SetTimerTMP(UIManager.instance.GetTimerTMP(),
+                            UIManager.instance.GetStartLevelTimeTMP());
+                        LevelManager.instance.SetLevelTMP(UIManager.instance.GetLevelTMP(),UIManager.instance.GetStartLevelTMP());
                         UIManager.instance.EnableSettingsButton();
+                        UIManager.instance.OpenStartScreen();
                     });
                 });
             });

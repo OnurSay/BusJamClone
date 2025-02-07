@@ -10,8 +10,8 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
 {
     public class LevelCreator : MonoBehaviour
     {
-        [Header("Cached References")] [SerializeField]
-        private GameObject gridBasePrefab;
+        [Header("Cached References")] 
+        [SerializeField] private GameObject gridBasePrefab;
         [SerializeField] private GameObject stickmanPrefab;
         [SerializeField] private GameObject busPrefab;
         [SerializeField] private GameColors gameColors;
@@ -20,8 +20,8 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
         private GameObject currentParentObject;
         private GameObject loadedLevel;
 
-        [Header("Level Settings")] [HideInInspector]
-        public int gridWidth;
+        [Header("Level Settings")] 
+        [HideInInspector] public int gridWidth;
         [HideInInspector] public int gridHeight;
         [HideInInspector] public int levelIndex;
         [SerializeField] public List<LevelGoal> levelGoals;
@@ -30,8 +30,8 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
         public bool isSecretStickman;
         public bool isReservedStickman;
 
-        [Header("Constant Variables")] [SerializeField]
-        private float spaceModifier;
+        [Header("Constant Variables")] 
+        [SerializeField] private float spaceModifier;
         private LevelData levelData;
 
         public void GenerateLevel()
@@ -64,8 +64,8 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
         public void LoadLevel()
         {
             levelData = LevelSaveSystem.LoadLevel(levelIndex);
-            if(levelData == null) return;
-            
+            if (levelData == null) return;
+
             gridWidth = levelData.width;
             gridHeight = levelData.height;
             var prefabName = $"Level_{levelIndex}";
@@ -87,7 +87,6 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
                     levelTime = container.GetLevelTime();
                     loadedLevel = level;
                 });
-            
         }
 
         public void ResetLevel()
@@ -126,6 +125,7 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
                     if (!gridBaseObj) continue;
                     gridBaseObj.transform.SetParent(gridParentObject.transform);
                     gridBaseObj.transform.position = pos;
+                    gridBaseObj.transform.localEulerAngles = new Vector3(0f, 180f, 0);
 
                     var gridBaseScript = gridBaseObj.GetComponent<GridBase>();
                     gridBases[x, y] = gridBaseScript;
@@ -142,8 +142,10 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
                     if (!stickman) continue;
                     stickman.transform.SetParent(gridBaseObj.transform);
                     stickman.transform.localPosition = Vector3.zero;
+                    stickman.transform.localEulerAngles = Vector3.zero;
                     var stickmanScript = stickman.GetComponent<Stickman>();
-                    stickmanScript.Init(cell.stackData.stickmanColorType, gridBaseScript);
+                    stickmanScript.Init(cell.stackData.stickmanColorType, cell.stackData.isSecret,
+                        cell.stackData.isReserved, gridBaseScript);
 
                     gridBaseScript = gridBaseObj.GetComponent<GridBase>();
                     gridBaseScript.Init(stickmanScript, false, cell.x, cell.y);
@@ -172,7 +174,7 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
                 bus.transform.localPosition = new Vector3(x, 0, 0);
                 x += 5.75f;
                 var busScript = bus.GetComponent<BusScript>();
-                busScript.Init(levelGoal.colorType);
+                busScript.Init(levelGoal.colorType, levelGoal.reservedCount);
                 buses.Add(busScript);
             }
 

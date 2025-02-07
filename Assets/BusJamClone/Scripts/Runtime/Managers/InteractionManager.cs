@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using BusJamClone.Scripts.Runtime.Models;
 using UnityEngine;
 
@@ -5,16 +6,25 @@ namespace BusJamClone.Scripts.Runtime.Managers
 {
     public class InteractionManager : MonoBehaviour
     {
+        [Header("Cached References")] 
+        private Camera mainCam;
+        
         [Header("Parameters")] 
         public LayerMask stickmanLayer;
 
-        void Update()
+        private void Start()
         {
-            if (!ShouldProcessInput())
-            {
-                return;
-            }
+            AssignMainCam();
+        }
 
+        private void AssignMainCam()
+        {
+            mainCam = Camera.main;
+        }
+
+        private void Update()
+        {
+            if (!ShouldProcessInput()) return;
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -29,7 +39,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
         void ProcessRaycastInteraction()
         {
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            var ray = mainCam.ScreenPointToRay(Input.mousePosition);
 
             if (!TryRayCast(ray, out var hitInfo, stickmanLayer)) return;
             if (!hitInfo.transform || !hitInfo.transform.CompareTag("Stickman")) return;
@@ -45,38 +55,86 @@ namespace BusJamClone.Scripts.Runtime.Managers
         {
             if (!hitInfo.transform.TryGetComponent(out Stickman stickman)) return;
 
-            if (!TimeManager.instance.GetIsTimerActive())
+            if (AudioManager.instance)
             {
-                TimeManager.instance.StartTimer();
-                UIManager.instance.StopBlinkTimer();
+                AudioManager.instance.PlayPop();
             }
 
+            if (!stickman.GetHasPath() && stickman.GetBelongedGrid().GetYAxis() != 0)
+            {
+                stickman.WrongSelection();
+                if (VibrationManager.instance)
+                {
+                    VibrationManager.instance.Medium();
+                }
+
+                return;
+            }
+
+            if (stickman.GetIsMoving()) return;
+            var currentGoal = GameplayManager.instance.GetCurrentBus();
+            var path = stickman.GetBelongedGrid().GetClosestPath();
+            
             if (VibrationManager.instance)
             {
                 VibrationManager.instance.Light();
             }
 
-            if (!stickman.GetHasPath() && stickman.GetBelongedGrid().GetYAxis() != 0) return;
-            if (stickman.GetIsMoving()) return;
-            var currentGoal = GameplayManager.instance.GetCurrentBus();
-
-            var path = stickman.GetBelongedGrid().GetClosestPath();
             if (stickman.GetColor() == currentGoal.GetColor() &&
                 currentGoal.GetComingStickmanCount() + 1 <= 3)
             {
-                currentGoal.AddComingStickman(1);
-                stickman.DisableInteraction();
-                stickman.GoToBus(path);
-                GridManager.instance.RecalculatePaths();
+                if (stickman.GetIsReserved())
+                {
+                    if (currentGoal.GetReservedCount() != 0)
+                    {
+                        currentGoal.DecreaseReservedCount();
+                        GoToGoal(currentGoal, stickman, path);
+                    }
+                    else
+                    {
+                        GoToMatchArea(stickman, path);
+                    }
+                }
+                else
+                {
+                    if (currentGoal.GetReservedCount() > 0)
+                    {
+                        if (!currentGoal.IsLastSeat())
+                        {
+                            GoToGoal(currentGoal, stickman, path);
+                        }
+                        else
+                        {
+                            GoToMatchArea(stickman, path);
+                        }
+                    }
+                    else
+                    {
+                        GoToGoal(currentGoal, stickman, path);
+                    }
+                }
             }
             else
             {
-                var availableMatchArea = MatchAreaManager.instance.GetEmptyArea();
-                if (!availableMatchArea) return;
-                stickman.DisableInteraction();
-                stickman.GoToMatchArea(availableMatchArea, availableMatchArea.transform, path);
-                GridManager.instance.RecalculatePaths();
+                GoToMatchArea(stickman, path);
             }
+        }
+
+        private void GoToGoal(BusScript currentGoal, Stickman stickman, List<GridBase> path)
+        {
+            currentGoal.AddComingStickman(1);
+            stickman.DisableInteraction();
+            stickman.GoToBus(path);
+            GridManager.instance.RecalculatePaths();
+        }
+
+        private void GoToMatchArea(Stickman stickman, List<GridBase> path)
+        {
+            var availableMatchArea = MatchAreaManager.instance.GetEmptyArea();
+            if (!availableMatchArea) return;
+            stickman.DisableInteraction();
+            stickman.GoToMatchArea(availableMatchArea, availableMatchArea.transform, path);
+            GridManager.instance.RecalculatePaths();
         }
     }
 }

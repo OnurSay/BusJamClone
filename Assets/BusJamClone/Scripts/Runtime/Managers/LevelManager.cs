@@ -8,12 +8,11 @@ namespace BusJamClone.Scripts.Runtime.Managers
     {
         public static LevelManager instance;
 
-        [Header("Flags")] 
+        [Header("Flags")]
         public bool isGamePlayable;
         public bool isLevelFailed;
-        public bool isGainedThisLevelCoin = false;
 
-        [Header("Parameters")]
+        [Header("Parameters")] 
         [SerializeField] private int levelIndex;
         [SerializeField] private int totalLevelCount;
         [SerializeField] private int totalPlayedLevelCount;
@@ -21,17 +20,15 @@ namespace BusJamClone.Scripts.Runtime.Managers
         private void Awake()
         {
             HandleFPS();
-
             MakeSingleton();
-
             FetchPlayerPrefs();
         }
 
         private void HandleFPS()
         {
-            if (Application.targetFrameRate != 60)
+            if (Application.targetFrameRate != 120)
             {
-                Application.targetFrameRate = 60;
+                Application.targetFrameRate = 120;
             }
         }
 
@@ -94,9 +91,10 @@ namespace BusJamClone.Scripts.Runtime.Managers
             totalLevelCount = levelCount;
         }
 
-        public void SetLevelTMP(TextMeshProUGUI levelTMP)
+        public void SetLevelTMP(TextMeshProUGUI levelTMP, TextMeshProUGUI startLevelTMP)
         {
             levelTMP.text = "Level " + totalPlayedLevelCount;
+            startLevelTMP.text = "LEVEL " + totalPlayedLevelCount;
             UIManager.instance.OpenLevelText();
         }
     }

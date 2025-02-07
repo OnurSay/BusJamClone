@@ -52,12 +52,7 @@ namespace BusJamClone.Scripts.Editor
                 return false;
 
             var isLevelGridExist = levelCreator.GetLevelData().GetGrid() != null;
-            if (!isLevelGridExist)
-            {
-                return false;
-            }
-
-            return true;
+            return isLevelGridExist;
         }
 
         private void DrawGridProperties()
@@ -144,17 +139,17 @@ namespace BusJamClone.Scripts.Editor
                             text += "," + "R";
                         }
                     }
-                    
+
                     var buttonRect = GUILayoutUtility.GetRect(new GUIContent(text), style, GUILayout.Width(75),
                         GUILayout.Height(75));
-                    
+
                     var textStyle = new GUIStyle
                     {
                         fontSize = 16,
                         fontStyle = FontStyle.Bold,
                         normal = { textColor = Color.black },
                     };
-                   
+
 
                     Rect[] subRects =
                     {
@@ -168,11 +163,11 @@ namespace BusJamClone.Scripts.Editor
                                 ? Color.black + new Color(0.1f * t, 0.1f * t, 0.1f * t)
                                 : subColors[t]);
                     }
-                   
+
                     Handles.Label(
                         new Vector3(buttonRect.x, buttonRect.y, 0),
                         text, textStyle);
-                    
+
 
                     for (var o = subRects.Length - 1; o >= 0; o--)
                     {
@@ -218,7 +213,7 @@ namespace BusJamClone.Scripts.Editor
             {
                 levelCreator.SaveLevel();
             }
-            
+
 
             EditorGUILayout.EndHorizontal();
         }
@@ -226,50 +221,66 @@ namespace BusJamClone.Scripts.Editor
         private bool DisplayColorStatus()
         {
             var grid = levelCreator.GetLevelData().GetGrid();
-            var isEverythingFine = false;
-
+            var errorCount = 0;
             foreach (LevelData.GridColorType colorType in Enum.GetValues(typeof(LevelData.GridColorType)))
             {
                 if (colorType is LevelData.GridColorType.None or LevelData.GridColorType.Close)
                     continue;
 
                 var colorCount = grid.Cast<GridCell>().Count(cell => cell.stackData.stickmanColorType == colorType);
-
+                var reservedColorCount = grid.Cast<GridCell>().Count(cell =>
+                    cell.stackData.stickmanColorType == colorType && cell.stackData.isReserved);
                 if (colorCount == 0)
                     continue;
 
                 var colorName = colorType.ToString();
                 var busCount = DisplayBusStatus(colorType);
+                var reservedBusCount = DisplayReservedBusCount(colorType);
                 if (colorCount % 3 == 0)
                 {
-                    
                     if (busCount == colorCount / 3)
                     {
-                        EditorGUILayout.HelpBox(
-                            $"{colorName} Color: OK ({colorCount} {colorName} Color with {busCount} Bus Count)",
-                            MessageType.Info);
-                        isEverythingFine = true;
+                        if (reservedColorCount == reservedBusCount)
+                        {
+                            EditorGUILayout.HelpBox(
+                                $"{colorName} Color: OK ({colorCount} {colorName} Color with {busCount} Bus Count that has {reservedColorCount})",
+                                MessageType.Info);
+                        }
+                        else
+                        {
+                            EditorGUILayout.HelpBox(
+                                $"{colorName} Color: NOT OK ({colorCount} {colorName} Color with {busCount} Bus Count that has {reservedColorCount})",
+                                MessageType.Error);
+                            errorCount++;
+                        }
                     }
                     else
                     {
                         EditorGUILayout.HelpBox(
-                            $"{colorName} Color: NOT OK ({colorCount} {colorName} Color with {busCount} Bus Count)",
+                            $"{colorName} Color: NOT OK ({colorCount} {colorName} Color with {busCount} Bus Count that has {reservedColorCount})",
                             MessageType.Error);
-                        isEverythingFine = false;
+                        errorCount++;
                     }
                 }
                 else
                 {
                     EditorGUILayout.HelpBox(
-                        $"{colorName} Color: NOT OK ({colorCount} {colorName} Color with {busCount} Bus Count) ",
+                        $"{colorName} Color: NOT OK ({colorCount} {colorName} Color with {busCount} Bus Count that has {reservedColorCount})",
                         MessageType.Error);
-                    isEverythingFine = false;
-
+                    errorCount++;
                 }
-
             }
 
-            return isEverythingFine;
+            return errorCount == 0;
+        }
+
+        private int DisplayReservedBusCount(LevelData.GridColorType colorType)
+        {
+            if (levelCreator.levelGoals == null || levelCreator.levelGoals.Count == 0)
+                return 0;
+
+            var sameColorBuses = levelCreator.levelGoals.Where(goal => colorType == goal.colorType);
+            return sameColorBuses.Sum(colorBus => colorBus.reservedCount);
         }
 
         private int DisplayBusStatus(LevelData.GridColorType gridColorType)

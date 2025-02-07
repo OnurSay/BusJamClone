@@ -5,22 +5,44 @@ namespace BusJamClone.Scripts.Runtime.Models
 {
     public class MatchArea : GridBase
     {
-        [Header("Flags")]
-        [SerializeField] private bool isReserved;
+        [Header("Flags")] [SerializeField] private bool isTaken;
 
         public void HandleNewGoal()
         {
             if (!HasStickman()) return;
             if (!GameplayManager.instance.GetCurrentBus()) return;
             var currentBus = GameplayManager.instance.GetCurrentBus();
-
             if (stickman.GetColor() != currentBus.GetColor()) return;
 
+            if (stickman.GetIsReserved())
+            {
+                if (currentBus.GetReservedCount() == 0) return;
+                currentBus.DecreaseReservedCount();
+                GoToBus(currentBus);
+            }
+            else
+            {
+                if (currentBus.GetReservedCount() > 0)
+                {
+                    if (currentBus.IsLastSeat()) return;
+                    GoToBus(currentBus);
+                }
+                else
+                {
+                    GoToBus(currentBus);
+                }
+            }
 
-            SetReserved(false);
-            MatchAreaManager.instance.RemoveMatchArea(this);
-            stickman.GoToBus(null);
         }
+
+        private void GoToBus(BusScript currentBus)
+        {
+            currentBus.AddComingStickman(1);
+            stickman.GoToBus(null);
+            SetTaken(false);
+            MatchAreaManager.instance.RemoveMatchArea(this);
+        }
+
 
         public bool HasStickman()
         {
@@ -32,14 +54,14 @@ namespace BusJamClone.Scripts.Runtime.Models
             stickman = man;
         }
 
-        public bool IsReserved()
+        public bool IsTaken()
         {
-            return isReserved;
+            return isTaken;
         }
 
-        public void SetReserved(bool flag)
+        public void SetTaken(bool flag)
         {
-            isReserved = flag;
+            isTaken = flag;
         }
     }
 }

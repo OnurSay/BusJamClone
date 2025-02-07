@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using DG.Tweening;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +14,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
         [Header("Cached References")] 
         [SerializeField] private Image screenTransitionImage;
         [SerializeField] private GameObject loadingScreen;
+        [SerializeField] private GameObject startScreen;
         [SerializeField] private GameObject loseScreen;
         [SerializeField] private GameObject levelCompleteConfetti;
         [SerializeField] private GameObject youWinObject;
@@ -23,6 +23,13 @@ namespace BusJamClone.Scripts.Runtime.Managers
         [SerializeField] private GameObject timerParent;
         [SerializeField] private TextMeshProUGUI timerTMP;
         private bool isTimerBlinking;
+
+        [Header("Start Screen References")] 
+        [SerializeField] private TextMeshProUGUI startScreenLevelTMP;
+        [SerializeField] private TextMeshProUGUI startScreenTimerTMP;
+
+        [Header("Lose Screen References")] 
+        [SerializeField] private TextMeshProUGUI loseTitleTMP;
 
         [Header("Level Text References")]
         [SerializeField] private GameObject levelTextParent;
@@ -70,6 +77,31 @@ namespace BusJamClone.Scripts.Runtime.Managers
         public void CloseLoadingScreen()
         {
             loadingScreen.SetActive(false);
+        }
+
+        public void OpenStartScreen()
+        {
+            LevelManager.instance.isGamePlayable = false;
+            startScreen.transform.parent.gameObject.SetActive(true);
+            startScreen.transform.DOScale(Vector3.one, 0.25f).SetEase(Ease.OutBack);
+        }
+        
+        public void CloseStartScreen()
+        {
+            startScreen.transform.DOScale(Vector3.zero, 0.25f).SetEase(Ease.InBack).OnComplete(() =>
+            {
+                startScreen.transform.parent.gameObject.SetActive(false);
+                LevelManager.instance.isGamePlayable = true;
+                HandleTimer();
+            });
+        }
+        
+
+        private void HandleTimer()
+        {
+            if (TimeManager.instance.GetIsTimerActive()) return;
+            TimeManager.instance.StartTimer();
+            StopBlinkTimer();
         }
 
         public void OpenLoseScreen()
@@ -139,7 +171,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
             settingsButton.SetActive(true);
         }
 
-        public void DisableSettingsButton()
+        private void DisableSettingsButton()
         {
             settingsButton.SetActive(false);
         }
@@ -197,7 +229,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
             StartCoroutine(BlinkTimer());
         }
 
-        public void StopBlinkTimer()
+        private void StopBlinkTimer()
         {
             StopCoroutine(BlinkTimer());
             isTimerBlinking = false;
@@ -210,6 +242,21 @@ namespace BusJamClone.Scripts.Runtime.Managers
             if (isTimerBlinking) return;
             isTimerBlinking = true;
             StartCoroutine(BlinkTimer());
+        }
+
+        public TextMeshProUGUI GetStartLevelTMP()
+        {
+            return startScreenLevelTMP;
+        }
+
+        public TextMeshProUGUI GetStartLevelTimeTMP()
+        {
+            return startScreenTimerTMP;
+        }
+
+        public void SetTimeLost()
+        {
+            loseTitleTMP.text = "Out of Time";
         }
     }
 }

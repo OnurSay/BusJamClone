@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using BusJamClone.Scripts.Config;
+using BusJamClone.Scripts.Data.Config;
 using BusJamClone.Scripts.Runtime.Models;
 using DG.Tweening;
 using UnityEngine;
@@ -13,24 +13,23 @@ namespace BusJamClone.Scripts.Runtime.Managers
     public class GameplayManager : MonoBehaviour
     {
         public static GameplayManager instance;
-        
-        [Header("Cached References")]
-        [SerializeField] private Material secretMaterial;
+
+        [Header("Cached References")] 
         [SerializeField] private BusScript currentGoalBus;
         [SerializeField] private List<BusScript> allBuses;
         [SerializeField] private List<BusScript> completedBuses;
         [SerializeField] private List<Stickman> stickmanThroughBus;
         [SerializeField] private GameConfig gameConfig;
         [SerializeField] private UIManager uiManager;
-        
-        [Header("Game Flags")]
+
+        [Header("Game Flags")] 
         [SerializeField] private bool isChangingGoal;
-        [SerializeField] private bool isGridCheckOnProgress;
         [SerializeField] private bool isAudioOn;
         [SerializeField] private bool isVibrationOn;
         private bool initialSettingsSet = true;
-        
-        [Header("Actions")]
+        private bool isInitialBusArrived;
+
+        [Header("Actions")] 
         public Action onBusChangeDone;
         public Action onGameLost;
 
@@ -79,7 +78,6 @@ namespace BusJamClone.Scripts.Runtime.Managers
                 return;
             }
 
-
             HandleLevelBusMovements();
         }
 
@@ -96,6 +94,18 @@ namespace BusJamClone.Scripts.Runtime.Managers
                 bus.transform.DOLocalMoveX(bus.transform.localPosition.x - 5.75f, 0.5f).SetEase(Ease.InSine).OnComplete(
                     () =>
                     {
+                        if (!isInitialBusArrived)
+                        {
+                            isInitialBusArrived = true;
+                            DOVirtual.DelayedCall(1f, () =>
+                            {
+                                if (AudioManager.instance)
+                                {
+                                    AudioManager.instance.PlayBusHorn();
+                                }
+                            });
+                        }
+
                         if (isGoalChanceCalled) return;
                         currentGoalBus = allBuses[0];
                         onBusChangeDone?.Invoke();
@@ -106,16 +116,6 @@ namespace BusJamClone.Scripts.Runtime.Managers
             }
         }
 
-        public bool GetIsGridCheckOnProgress()
-        {
-            return isGridCheckOnProgress;
-        }
-
-        public List<BusScript> GetCompletedBuses()
-        {
-            return completedBuses;
-        }
-
         public bool GetIsChangingGoal()
         {
             return isChangingGoal;
@@ -124,16 +124,6 @@ namespace BusJamClone.Scripts.Runtime.Managers
         public void SetIsChangingGoal(bool flag)
         {
             isChangingGoal = flag;
-        }
-
-        public void AddBus(BusScript busScript)
-        {
-            allBuses.Add(busScript);
-        }
-
-        public void ResetLevelGoals()
-        {
-            allBuses.Clear();
         }
 
         public void SetBuses(List<BusScript> levelBuses)
@@ -164,6 +154,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
         {
             if (initialSettingsSet) return;
             isAudioOn = !isAudioOn;
+            AudioListener.volume = isAudioOn ? 1 : 0;
             SaveConfig();
         }
 
@@ -177,28 +168,53 @@ namespace BusJamClone.Scripts.Runtime.Managers
             LevelManager.instance.isGamePlayable = false;
             uiManager.LevelCompleteEvents();
             TimeManager.instance.PauseTimer();
+            
+            if (VibrationManager.instance)
+            {
+                VibrationManager.instance.Win();
+            }
+            
+            if (AudioManager.instance)
+            {
+                AudioManager.instance.PlayLevelComplete();
+            }
+
             DOVirtual.DelayedCall(3f, () => { LevelManager.instance.LevelIncrease(); });
         }
 
-        public void LoseGame()
+        public void LoseGame(bool isTimeLose)
         {
             if (!LevelManager.instance.isGamePlayable || LevelManager.instance.isLevelFailed) return;
             LevelManager.instance.isGamePlayable = false;
             LevelManager.instance.isLevelFailed = true;
+
             onGameLost?.Invoke();
             TimeManager.instance.PauseTimer();
-            DOVirtual.DelayedCall(1f, () => { uiManager.OpenLoseScreen(); });
+            DOVirtual.DelayedCall(1f, () =>
+            {
+                
+                if (VibrationManager.instance)
+                {
+                    VibrationManager.instance.Fail();
+                }
+                
+                if (AudioManager.instance)
+                {
+                    AudioManager.instance.PlayLevelFail();
+                }
+
+                if (isTimeLose)
+                {
+                    uiManager.SetTimeLost();
+                }
+                uiManager.OpenLoseScreen();
+            });
         }
 
         public void AddStickmanThroughBus(Stickman stickman)
         {
             if (stickmanThroughBus.Contains(stickman)) return;
             stickmanThroughBus.Add(stickman);
-        }
-
-        public List<Stickman> GetStickmanThroughBus()
-        {
-            return stickmanThroughBus;
         }
 
         public void RemoveStickmanThroughBus(Stickman stickman)

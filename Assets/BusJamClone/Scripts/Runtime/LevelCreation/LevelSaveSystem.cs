@@ -43,7 +43,7 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
                 BackupLevel(levelIndex);
             }
 
-            string json = JsonConvert.SerializeObject(levelGrid);
+            var json = JsonConvert.SerializeObject(levelGrid);
             File.WriteAllText(filePath, json);
 #if UNITY_EDITOR
             AssetDatabase.Refresh();
@@ -60,11 +60,6 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
             var backupLevel = Resources.Load<TextAsset>($"LevelData/Level{levelIndex}").text;
             var filePath = backupLevelDataPath + $"Level{levelIndex}.json";
             File.WriteAllText(filePath, backupLevel);
-        }
-
-        public static bool IsLevelExists(int levelIndex)
-        {
-            return Resources.Load<TextAsset>($"LevelData/Level{levelIndex}") != null;
         }
     }
 }

@@ -1,4 +1,4 @@
-using BusJamClone.Scripts.Config;
+using BusJamClone.Scripts.Data.Config;
 
 namespace BusJamClone.Scripts.Singleton
 {

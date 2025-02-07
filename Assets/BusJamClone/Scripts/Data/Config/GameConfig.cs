@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace BusJamClone.Scripts.Config
+namespace BusJamClone.Scripts.Data.Config
 {
     [CreateAssetMenu(fileName = "Game Config", menuName = "ScriptableObjects/GameConfig", order = 1)]
     public class GameConfig : ScriptableObject
