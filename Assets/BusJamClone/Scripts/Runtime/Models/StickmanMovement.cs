@@ -158,7 +158,7 @@ namespace BusJamClone.Scripts.Runtime.Models
                 ChangePath(newPath, onComplete);
                 return;
             }
-
+            
             SetPath(newPath, onComplete);
             StartMovement();
         }

@@ -5,7 +5,8 @@ namespace BusJamClone.Scripts.Runtime.Models
 {
     public class MatchArea : GridBase
     {
-        [Header("Flags")] [SerializeField] private bool isTaken;
+        [Header("Flags")] 
+        [SerializeField] private bool isTaken;
 
         public void HandleNewGoal()
         {
@@ -32,11 +33,11 @@ namespace BusJamClone.Scripts.Runtime.Models
                     GoToBus(currentBus);
                 }
             }
-
         }
 
         private void GoToBus(BusScript currentBus)
         {
+            if (currentBus.GetComingStickmanCount() >= 3) return;
             currentBus.AddComingStickman(1);
             stickman.GoToBus(null);
             SetTaken(false);

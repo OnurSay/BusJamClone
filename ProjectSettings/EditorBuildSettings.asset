@@ -8,11 +8,5 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/BusJamClone/Scenes/GameplayScene.unity
     guid: a0c795ed3c57e004a9a5518840656fea
-  - enabled: 1
-    path: Assets/BusJamClone/Scenes/LevelCreator.unity
-    guid: a58afc804eda27d4caa37625591b9e9f
-  - enabled: 1
-    path: Assets/BusJamClone/Scenes/TestScene.unity
-    guid: c00ba1f4a98552b41a267fa36bc4da7f
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: e6eaf22e9cc35f943bda3911a5ae7eb8, type: 2}

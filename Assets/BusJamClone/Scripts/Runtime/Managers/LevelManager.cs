@@ -9,16 +9,16 @@ namespace BusJamClone.Scripts.Runtime.Managers
     {
         public static LevelManager instance;
 
-        [Header("CachedReferences")] [SerializeField]
-        private TestConfig testConfig;
+        [Header("CachedReferences")] 
+        [SerializeField]private TestConfig testConfig;
 
-        [Header("Flags")] public bool isGamePlayable;
+        [Header("Flags")] 
+        public bool isGamePlayable;
         public bool isLevelFailed;
         public bool isTestScene;
 
-        [Header("Parameters")] [SerializeField]
-        private int levelIndex;
-
+        [Header("Parameters")] 
+        [SerializeField]private int levelIndex;
         [SerializeField] private int totalLevelCount;
         [SerializeField] private int totalPlayedLevelCount;
 

@@ -8,7 +8,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
     {
         [Header("Cached References")] 
         private Camera mainCam;
-        
+
         [Header("Parameters")] 
         public LayerMask stickmanLayer;
 
@@ -55,6 +55,9 @@ namespace BusJamClone.Scripts.Runtime.Managers
         {
             if (!hitInfo.transform.TryGetComponent(out Stickman stickman)) return;
 
+            if (!stickman.GetBelongedGrid()) return;
+            if (stickman.GetIsMoving() && stickman.GetBelongedGrid() as MatchArea) return;
+
             if (AudioManager.instance)
             {
                 AudioManager.instance.PlayPop();
@@ -71,10 +74,9 @@ namespace BusJamClone.Scripts.Runtime.Managers
                 return;
             }
 
-            if (stickman.GetIsMoving()) return;
             var currentGoal = GameplayManager.instance.GetCurrentBus();
             var path = stickman.GetBelongedGrid().GetClosestPath();
-            
+
             if (VibrationManager.instance)
             {
                 VibrationManager.instance.Light();

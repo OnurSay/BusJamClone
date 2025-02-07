@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using BusJamClone.Scripts.Runtime.Models;
+using DG.Tweening;
 using UnityEngine;
 
 namespace BusJamClone.Scripts.Runtime.Managers
@@ -41,9 +42,9 @@ namespace BusJamClone.Scripts.Runtime.Managers
                 matchArea.HandleNewGoal();
             }
 
-            CheckMatchAreas();
+            DOVirtual.DelayedCall(0.15f, CheckMatchAreas);
         }
-        
+
         public MatchArea GetEmptyArea()
         {
             return matchAreas.Find(x => !x.HasStickman() && !x.IsTaken() ? x : null);

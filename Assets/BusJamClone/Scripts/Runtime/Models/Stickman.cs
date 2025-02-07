@@ -9,9 +9,8 @@ namespace BusJamClone.Scripts.Runtime.Models
 {
     public class Stickman : MonoBehaviour
     {
-        [Header("Cached References")] [SerializeField]
-        private SkinnedMeshRenderer skinnedMeshRenderer;
-
+        [Header("Cached References")] 
+        [SerializeField] private SkinnedMeshRenderer skinnedMeshRenderer;
         [SerializeField] private GameColors gameColors;
         [SerializeField] private Material startMat;
         [SerializeField] private Material secretMat;
@@ -24,9 +23,8 @@ namespace BusJamClone.Scripts.Runtime.Models
         [SerializeField] private GridBase belongedGrid;
         private GameObject currentWrongObject;
 
-        [Header("Parameters")] [SerializeField]
-        private LevelData.GridColorType stickmanColorType;
-
+        [Header("Parameters")] 
+        [SerializeField] private LevelData.GridColorType stickmanColorType;
         [SerializeField] private bool isMoving;
         [SerializeField] private bool hasPath;
         [SerializeField] private bool isSecret;
