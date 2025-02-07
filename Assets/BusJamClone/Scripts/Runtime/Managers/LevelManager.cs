@@ -1,3 +1,4 @@
+using BusJamClone.Scripts.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,12 +9,16 @@ namespace BusJamClone.Scripts.Runtime.Managers
     {
         public static LevelManager instance;
 
-        [Header("Flags")]
-        public bool isGamePlayable;
-        public bool isLevelFailed;
+        [Header("CachedReferences")] [SerializeField]
+        private TestConfig testConfig;
 
-        [Header("Parameters")] 
-        [SerializeField] private int levelIndex;
+        [Header("Flags")] public bool isGamePlayable;
+        public bool isLevelFailed;
+        public bool isTestScene;
+
+        [Header("Parameters")] [SerializeField]
+        private int levelIndex;
+
         [SerializeField] private int totalLevelCount;
         [SerializeField] private int totalPlayedLevelCount;
 
@@ -21,7 +26,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
         {
             HandleFPS();
             MakeSingleton();
-            FetchPlayerPrefs();
+            HandleSaveData();
         }
 
         private void HandleFPS()
@@ -41,6 +46,19 @@ namespace BusJamClone.Scripts.Runtime.Managers
             else
             {
                 Destroy(gameObject);
+            }
+        }
+        
+        private void HandleSaveData()
+        {
+            if (!isTestScene)
+            {
+                FetchPlayerPrefs();
+            }
+            else
+            {
+                levelIndex = testConfig.testLevelIndex;
+                totalPlayedLevelCount = 0;
             }
         }
 

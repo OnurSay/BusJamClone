@@ -23,6 +23,7 @@ namespace BusJamClone.Scripts.Utilities
 
 #if UNITY_EDITOR
         [Header("Editor")] public Action<GameObject> callbackAction;
+        public AsyncOperationHandle<GameObject>? currentHandle;
 #endif
 
         private void Start()
@@ -68,7 +69,12 @@ namespace BusJamClone.Scripts.Utilities
 
         private void LoadPrefabEditor(string prefabAddress)
         {
-            Addressables.LoadAssetAsync<GameObject>(prefabAddress).Completed += OnPrefabLoadedEditor;
+            if (currentHandle.HasValue && currentHandle.Value.IsValid())
+            {
+                Addressables.Release(currentHandle.Value);
+            }
+            currentHandle = Addressables.LoadAssetAsync<GameObject>(prefabAddress);
+            currentHandle.Value.Completed += OnPrefabLoadedEditor;
         }
 
         private void OnPrefabLoadedEditor(AsyncOperationHandle<GameObject> handle)

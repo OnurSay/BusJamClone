@@ -4,24 +4,28 @@ using BusJamClone.Scripts.Data;
 using BusJamClone.Scripts.Runtime.Models;
 using BusJamClone.Scripts.Utilities;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace BusJamClone.Scripts.Runtime.LevelCreation
 {
     public class LevelCreator : MonoBehaviour
     {
-        [Header("Cached References")] 
-        [SerializeField] private GameObject gridBasePrefab;
+        [Header("Cached References")] [SerializeField]
+        private GameObject gridBasePrefab;
+
         [SerializeField] private GameObject stickmanPrefab;
         [SerializeField] private GameObject busPrefab;
         [SerializeField] private GameColors gameColors;
         [SerializeField] private AddressablePrefabSaver prefabSaver;
         [SerializeField] private AddressablePrefabLoader prefabLoader;
+        [SerializeField] private TestConfig testConfig;
         private GameObject currentParentObject;
         private GameObject loadedLevel;
 
-        [Header("Level Settings")] 
-        [HideInInspector] public int gridWidth;
+        [Header("Level Settings")] [HideInInspector]
+        public int gridWidth;
+
         [HideInInspector] public int gridHeight;
         [HideInInspector] public int levelIndex;
         [SerializeField] public List<LevelGoal> levelGoals;
@@ -30,8 +34,9 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
         public bool isSecretStickman;
         public bool isReservedStickman;
 
-        [Header("Constant Variables")] 
-        [SerializeField] private float spaceModifier;
+        [Header("Constant Variables")] [SerializeField]
+        private float spaceModifier;
+
         private LevelData levelData;
 
         public void GenerateLevel()
@@ -91,8 +96,16 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
 
         public void ResetLevel()
         {
+            RemoveLevel();
+            levelGoals.Clear();
             levelData = new LevelData(gridWidth, gridHeight);
             prefabSaver.RemovePrefabFromAddressablesAndDelete(levelIndex);
+        }
+
+
+        private void RemoveLevel()
+        {
+            LevelSaveSystem.RemoveLevel(levelIndex);
         }
 
         public LevelData GetLevelData() => levelData;
@@ -190,6 +203,16 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
         public GameColors GetGameColors()
         {
             return gameColors;
+        }
+
+        public void TestLevel()
+        {
+            testConfig.testLevelIndex = levelIndex;
+            EditorUtility.SetDirty(this);
+            EditorSceneManager.SaveOpenScenes();
+            EditorSceneManager.OpenScene("Assets/BusJamClone/Scenes/TestScene.unity");
+            EditorApplication.isPlaying = true;
+            
         }
     }
 

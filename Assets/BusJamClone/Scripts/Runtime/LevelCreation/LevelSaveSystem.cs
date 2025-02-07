@@ -61,5 +61,14 @@ namespace BusJamClone.Scripts.Runtime.LevelCreation
             var filePath = backupLevelDataPath + $"Level{levelIndex}.json";
             File.WriteAllText(filePath, backupLevel);
         }
+
+        public static void RemoveLevel(int levelIndex)
+        {
+            var filePath = levelDataPath + $"Level{levelIndex}.json";
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
     }
 }

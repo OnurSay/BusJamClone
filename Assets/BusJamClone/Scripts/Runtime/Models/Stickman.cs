@@ -9,8 +9,9 @@ namespace BusJamClone.Scripts.Runtime.Models
 {
     public class Stickman : MonoBehaviour
     {
-        [Header("Cached References")] 
-        [SerializeField] private SkinnedMeshRenderer skinnedMeshRenderer;
+        [Header("Cached References")] [SerializeField]
+        private SkinnedMeshRenderer skinnedMeshRenderer;
+
         [SerializeField] private GameColors gameColors;
         [SerializeField] private Material startMat;
         [SerializeField] private Material secretMat;
@@ -23,8 +24,9 @@ namespace BusJamClone.Scripts.Runtime.Models
         [SerializeField] private GridBase belongedGrid;
         private GameObject currentWrongObject;
 
-        [Header("Parameters")] 
-        [SerializeField] private LevelData.GridColorType stickmanColorType;
+        [Header("Parameters")] [SerializeField]
+        private LevelData.GridColorType stickmanColorType;
+
         [SerializeField] private bool isMoving;
         [SerializeField] private bool hasPath;
         [SerializeField] private bool isSecret;
@@ -42,7 +44,7 @@ namespace BusJamClone.Scripts.Runtime.Models
         {
             stickmanColorType = colorType;
             startMat = gameColors.activeMaterials[(int)stickmanColorType];
-            
+
             if (isSecret)
             {
                 secretQuestionMark.SetActive(true);
@@ -50,8 +52,9 @@ namespace BusJamClone.Scripts.Runtime.Models
 
             if (isReserved)
             {
-                reservedCap.SetActive(true);
+                reservedCap.SetActive(isReserved && !isSecret);
             }
+
             var material = isSecret ? secretMat : gameColors.activeMaterials[(int)stickmanColorType];
             skinnedMeshRenderer.sharedMaterial = material;
         }
@@ -64,9 +67,15 @@ namespace BusJamClone.Scripts.Runtime.Models
                 isSecret = false;
                 secretQuestionMark.SetActive(false);
             }
+
+            if (isReserved)
+            {
+                reservedCap.SetActive(true);
+            }
+
             skinnedMeshRenderer.material = startMat;
         }
-        
+
         public void GoToBus(List<GridBase> path)
         {
             transform.SetParent(null);
@@ -74,7 +83,7 @@ namespace BusJamClone.Scripts.Runtime.Models
             DissociateStickman();
             var currentBus = GameplayManager.instance.GetCurrentBus();
             GameplayManager.instance.AddStickmanThroughBus(this);
-            
+
             if (path != null)
             {
                 var pathPositions = HandlePathPositions(path, currentBus.GetEntranceTransform().position);
@@ -105,8 +114,9 @@ namespace BusJamClone.Scripts.Runtime.Models
         {
             var thisTransform = transform;
             thisTransform.SetParent(null);
-            var vfx = Instantiate(disappearVFX, thisTransform.position + new Vector3(0f,2f, 1f), thisTransform.rotation);
-            Destroy(vfx,2f);
+            var vfx = Instantiate(disappearVFX, thisTransform.position + new Vector3(0f, 2f, 1f),
+                thisTransform.rotation);
+            Destroy(vfx, 2f);
             gameObject.SetActive(false);
             GameplayManager.instance.RemoveStickmanThroughBus(this);
             GameplayManager.instance.GetCurrentBus().GetStickman(isReserved);
@@ -171,6 +181,7 @@ namespace BusJamClone.Scripts.Runtime.Models
         {
             return hasPath;
         }
+
         public GridBase GetBelongedGrid()
         {
             return belongedGrid;
@@ -194,11 +205,11 @@ namespace BusJamClone.Scripts.Runtime.Models
         public void WrongSelection()
         {
             if (currentWrongObject) return;
-            var wrongObject = Instantiate(wrongSelectionObject,transform.position+new Vector3(0f,1f,0f),quaternion.identity);
+            var wrongObject = Instantiate(wrongSelectionObject, transform.position + new Vector3(0f, 1f, 0f),
+                quaternion.identity);
             wrongObject.SetActive(true);
             currentWrongObject = wrongObject;
-            Destroy(wrongObject,1f);
-            
+            Destroy(wrongObject, 1f);
         }
     }
 }

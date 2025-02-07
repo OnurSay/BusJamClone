@@ -32,9 +32,9 @@ namespace BusJamClone.Scripts.Editor
                 return;
             }
 
-            DrawGrid();
+            DrawGrid(); 
             DrawSaveLoadButtons(DisplayColorStatus());
-
+            DrawTestButton();
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(levelCreator, "Change Level Goals");
@@ -52,7 +52,10 @@ namespace BusJamClone.Scripts.Editor
                 return false;
 
             var isLevelGridExist = levelCreator.GetLevelData().GetGrid() != null;
-            return isLevelGridExist;
+            
+            var isGridBoundsCorrect = (levelCreator.gridWidth * levelCreator.gridHeight) ==
+                                      levelCreator.GetLevelData().GetGrid().Length;
+            return isLevelGridExist && isGridBoundsCorrect;
         }
 
         private void DrawGridProperties()
@@ -218,6 +221,23 @@ namespace BusJamClone.Scripts.Editor
             EditorGUILayout.EndHorizontal();
         }
 
+        
+
+        private void DrawTestButton()
+        { 
+            EditorGUILayout.Space();
+            EditorGUILayout.HelpBox("Test Before Forward!", MessageType.Warning);
+            EditorGUILayout.LabelField("Testing", EditorStyles.boldLabel);
+            GUI.backgroundColor = Color.white;
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Test"))
+            {
+                levelCreator.TestLevel();
+            }
+
+            EditorGUILayout.EndHorizontal();
+            
+        }
         private bool DisplayColorStatus()
         {
             var grid = levelCreator.GetLevelData().GetGrid();

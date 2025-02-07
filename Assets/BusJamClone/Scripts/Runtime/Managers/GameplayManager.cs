@@ -5,6 +5,8 @@ using System.Linq;
 using BusJamClone.Scripts.Data.Config;
 using BusJamClone.Scripts.Runtime.Models;
 using DG.Tweening;
+using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace BusJamClone.Scripts.Runtime.Managers
@@ -112,7 +114,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
                         isChangingGoal = false;
                         isGoalChanceCalled = true;
                     });
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(0.25f);
             }
         }
 
@@ -179,7 +181,16 @@ namespace BusJamClone.Scripts.Runtime.Managers
                 AudioManager.instance.PlayLevelComplete();
             }
 
-            DOVirtual.DelayedCall(3f, () => { LevelManager.instance.LevelIncrease(); });
+            DOVirtual.DelayedCall(3f, () =>
+            {
+                if (LevelManager.instance.isTestScene)
+                {
+                    EditorApplication.isPlaying = false;
+                    EditorApplication.playModeStateChanged += GoToLevelCreator;
+                    return;
+                }
+                LevelManager.instance.LevelIncrease();
+            });
         }
 
         public void LoseGame(bool isTimeLose)
@@ -190,6 +201,14 @@ namespace BusJamClone.Scripts.Runtime.Managers
 
             onGameLost?.Invoke();
             TimeManager.instance.PauseTimer();
+            
+            if (LevelManager.instance.isTestScene)
+            {
+                EditorApplication.isPlaying = false;
+                EditorApplication.playModeStateChanged += GoToLevelCreator;
+                return;
+            }
+            
             DOVirtual.DelayedCall(1f, () =>
             {
                 
@@ -207,6 +226,7 @@ namespace BusJamClone.Scripts.Runtime.Managers
                 {
                     uiManager.SetTimeLost();
                 }
+                
                 uiManager.OpenLoseScreen();
             });
         }
@@ -221,6 +241,15 @@ namespace BusJamClone.Scripts.Runtime.Managers
         {
             if (!stickmanThroughBus.Contains(stickman)) return;
             stickmanThroughBus.Remove(stickman);
+        }
+
+        private void GoToLevelCreator(PlayModeStateChange obj)
+        {
+            if (obj == PlayModeStateChange.EnteredEditMode)
+            {
+                EditorSceneManager.OpenScene("Assets/BusJamClone/Scenes/LevelCreator.unity");
+            }
+            
         }
     }
 }

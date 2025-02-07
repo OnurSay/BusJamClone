@@ -3009,7 +3009,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 772053210}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.002738055, y: 0.87486905, z: -0.48431858, w: 0.0056752046}
+  m_LocalRotation: {x: 0, y: 0.87488616, z: -0.4843287, w: 0}
   m_LocalPosition: {x: 0, y: 19.58, z: 9.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3017,7 +3017,7 @@ Transform:
   - {fileID: 953980450}
   - {fileID: 802580887}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 57.937, y: 179.214, z: -0.076}
+  m_LocalEulerAnglesHint: {x: 57.937, y: 180, z: 0}
 --- !u!1 &801592131
 GameObject:
   m_ObjectHideFlags: 0
@@ -3339,7 +3339,6 @@ MonoBehaviour:
   stickmanThroughBus: []
   gameConfig: {fileID: 11400000, guid: 1b3b2df7be0ad994eb771212b16fbe05, type: 2}
   uiManager: {fileID: 398201138}
-  audioListener: {fileID: 0}
   isChangingGoal: 0
   isAudioOn: 0
   isVibrationOn: 0
@@ -3988,7 +3987,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isGamePlayable: 1
   isLevelFailed: 0
-  isGainedThisLevelCoin: 0
   levelIndex: 0
   totalLevelCount: 0
   totalPlayedLevelCount: 0
@@ -4903,7 +4901,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1351022186}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.002738055, y: 0.87486905, z: -0.48431858, w: 0.0056752046}
+  m_LocalRotation: {x: 0, y: 0.87488616, z: -0.4843287, w: 0}
   m_LocalPosition: {x: 0, y: 19.58, z: 9.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
